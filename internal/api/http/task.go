@@ -4,13 +4,13 @@ import (
 	"math/rand"
 	"net/http"
 	"task-server/internal/api/http/types"
+	"task-server/internal/repository"
 	"task-server/internal/usecases"
 	"task-server/utils"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/google/uuid"
 )
 
 type TaskHandler struct {
@@ -23,8 +23,7 @@ func NewTaskHandler(service usecases.Task) *TaskHandler {
 
 // someHeavyWork - возвращает рандомный набор байт через продолжительное время
 // - имитация работы другого сервиса с вычислениями
-func someHeavyWork(data string) []byte {
-	_ = data
+func someHeavyWork() []byte {
 	time.Sleep(time.Second * time.Duration(3+rand.Intn(30)))
 	res := make([]byte, 100)
 	for i := 0; i < len(res); i++ {
@@ -35,17 +34,19 @@ func someHeavyWork(data string) []byte {
 
 // createTaskHandler - обработчик создания задачи
 func (th *TaskHandler) createTaskHandler(w http.ResponseWriter, r *http.Request) {
-	var in types.CreateTaskRequest
-	err := utils.ReadJSON(r, &in)
 
-	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "failed to read json"+err.Error())
-		return
-	}
+	// var in types.CreateTaskRequest // читаем json в случае если передаются данные для обработки
+	// err := utils.ReadJSON(r, &in)
+
+	// if err != nil {
+	// 	utils.WriteError(w, http.StatusBadRequest, "failed to read json"+err.Error())
+	// 	return
+	// }
+
 	u := th.service.CreateTask()
 
 	go func() {
-		res := someHeavyWork(in.Data)
+		res := someHeavyWork()
 		t, err := th.service.GetTask(u)
 		if err != nil {
 			return
@@ -63,39 +64,39 @@ func (th *TaskHandler) createTaskHandler(w http.ResponseWriter, r *http.Request)
 
 // getTaskStatusHandler - обработчик получения статуса задачи
 func (th *TaskHandler) getTaskStatusHandler(w http.ResponseWriter, r *http.Request) {
-	u := chi.URLParam(r, "task_id")
-	uuid, err := uuid.Parse(u)
+	id, err := utils.ParseUUID(r, "task_id")
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "invalid id")
+		utils.WriteError(w, http.StatusBadRequest, "Invalid task_id")
 		return
 	}
-	task, err := th.service.GetTask(uuid)
-	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, err.Error())
+
+	task, err := th.service.GetTask(id)
+	if err == repository.ErrTaskNotFound {
+		utils.WriteError(w, http.StatusNotFound, err.Error())
+		return
+	} else if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, "Internal error")
 		return
 	}
 	status := task.Status
+
 	utils.WriteJSON(w, types.GetStatusResponse{Status: status}, http.StatusOK)
 }
 
 // getTaskResultHandler - обработчик получения результата задачи
 func (th *TaskHandler) getTaskResultHandler(w http.ResponseWriter, r *http.Request) {
-	u := chi.URLParam(r, "task_id")
-
-	if u == "" {
-		utils.WriteError(w, http.StatusBadRequest, "missing task_id")
+	id, err := utils.ParseUUID(r, "task_id")
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, "Invalid task_id")
 		return
 	}
 
-	uuid, err := uuid.Parse(u)
-	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "invalid task_id")
+	task, err := th.service.GetTask(id)
+	if err == repository.ErrTaskNotFound {
+		utils.WriteError(w, http.StatusNotFound, err.Error())
 		return
-	}
-
-	task, err := th.service.GetTask(uuid)
-	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, err.Error())
+	} else if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, "Internal error")
 		return
 	}
 	result := task.Result

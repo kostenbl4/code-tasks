@@ -7,7 +7,7 @@ type CreateTaskRequest struct {
 
 // CreateTaskResponse - структура для выходных данных на создание задачи
 type CreateTaskResponse struct {
-	UUID string `json:"uuid"`
+	UUID string `json:"task_id"`
 }
 
 // GetStatusResponse - структура для выходных данных на запрос статуса задачи
