@@ -1,49 +1,28 @@
-package storage
+package inmemstorage
 
 import (
-	"errors"
+	"task-server/internal/domain"
+	"task-server/internal/repository"
 
 	"github.com/google/uuid"
 )
 
-var (
-	// Ошибка, возвращаемая, если задача не найдена
-	errTaskNotFound = errors.New("task not found")
-)
-
-// Storage - интерфейс для хранилища задач
-type Storage interface {
-	// Создает новую задачу и возвращает её UUID
-	CreateTask() uuid.UUID
-	// Возвращает задачу по её UUID
-	GetTask(uuid.UUID) (Task, error)
-	// Обновляет существующую задачу
-	UpdateTask(Task) error
-}
-
-// Task - структура задачи
-type Task struct {
-	UUID   uuid.UUID
-	Status string
-	Result []byte
-}
-
 // tasksStore - хранилище задач, конретная реализация интерфейса Storage, можеи быть заменена на другую реализацию
 type tasksStore struct {
 	// Хранилище задач в виде карты
-	tasks map[uuid.UUID]Task
+	tasks map[uuid.UUID]domain.Task
 }
 
 // Создает новое хранилище задач
 func NewTaskStore() *tasksStore { // либо Storage
-	return &tasksStore{tasks: make(map[uuid.UUID]Task)}
+	return &tasksStore{tasks: make(map[uuid.UUID]domain.Task)}
 }
 
 // Создает новую задачу и добавляет её в хранилище
 func (ts *tasksStore) CreateTask() uuid.UUID {
 	uuid := uuid.New()
 
-	ts.tasks[uuid] = Task{
+	ts.tasks[uuid] = domain.Task{
 		UUID:   uuid,
 		Status: "in_progress",
 	}
@@ -52,20 +31,20 @@ func (ts *tasksStore) CreateTask() uuid.UUID {
 }
 
 // Возвращает задачу по её UUID, если она существует
-func (ts *tasksStore) GetTask(uuid uuid.UUID) (Task, error) {
+func (ts *tasksStore) GetTask(uuid uuid.UUID) (domain.Task, error) {
 	t, ok := ts.tasks[uuid]
 	if ok {
 		return t, nil
 	}
-	return Task{}, errTaskNotFound
+	return domain.Task{}, repository.ErrTaskNotFound
 }
 
 // Обновляет существующую задачу в хранилище
-func (ts *tasksStore) UpdateTask(task Task) error {
+func (ts *tasksStore) UpdateTask(task domain.Task) error {
 	_, ok := ts.tasks[task.UUID]
 	if ok {
 		ts.tasks[task.UUID] = task
 		return nil
 	}
-	return errTaskNotFound
+	return repository.ErrTaskNotFound
 }
