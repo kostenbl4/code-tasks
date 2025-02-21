@@ -1,9 +1,9 @@
 package types
 
 // CreateTaskRequest - структура для входных данных на создание задачи
-type CreateTaskRequest struct {
-	Data string `json:"data"`
-}
+// type CreateTaskRequest struct {
+// 	Data string `json:"data"`
+// }
 
 // CreateTaskResponse - структура для выходных данных на создание задачи
 type CreateTaskResponse struct {

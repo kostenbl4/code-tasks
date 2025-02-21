@@ -8,9 +8,19 @@ import (
 	service "task-server/internal/usecases/task"
 	httpServer "task-server/pkg/http"
 
+	httpSwagger "github.com/swaggo/http-swagger"
+	_ "task-server/docs"
+
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
+// @title Task-server API
+// @version 1.0
+// @description This is a sample server.
+
+// @host localhost:8080
+// @BasePath /
 func main() {
 
 	addr := flag.String("addr", ":8080", "address for the http server")
@@ -31,6 +41,14 @@ func main() {
 
 	// Создаем http роутер
 	r := chi.NewRouter()
+	// Register middleware first
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+
+	// Добавляем swagger
+	r.Mount("/swagger", httpSwagger.WrapHandler)
 
 	// Прикрепляем обработчики
 	handler.RegisterRoutes(r)

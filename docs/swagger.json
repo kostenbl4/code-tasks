@@ -1,0 +1,164 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a sample server.",
+        "title": "Task-server API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/result/{task_id}": {
+            "get": {
+                "description": "Returns the result of a completed task by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Get task result",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.GetResultResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid task ID format or internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Task not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/status/{task_id}": {
+            "get": {
+                "description": "Returns the current status of a task by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Get task status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.GetStatusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid task ID format",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Task not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/task": {
+            "post": {
+                "description": "Creates a new task and returns task ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Create a task",
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/types.CreateTaskResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "types.CreateTaskResponse": {
+            "type": "object",
+            "properties": {
+                "task_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.GetResultResponse": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "types.GetStatusResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

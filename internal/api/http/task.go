@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 )
 
 type TaskHandler struct {
@@ -32,7 +31,14 @@ func someHeavyWork() []byte {
 	return res
 }
 
-// createTaskHandler - обработчик создания задачи
+// @Summary Create a task
+// @Description Creates a new task and returns task ID
+// @Tags task
+// @Produce json
+// @Success 201 {object} types.CreateTaskResponse
+// @Failure 400 {string} string "Invalid request"
+// @Failure 500 {string} string "Internal server error"
+// @Router /task [post]
 func (th *TaskHandler) createTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	// var in types.CreateTaskRequest // читаем json в случае если передаются данные для обработки
@@ -62,7 +68,16 @@ func (th *TaskHandler) createTaskHandler(w http.ResponseWriter, r *http.Request)
 	utils.WriteJSON(w, types.CreateTaskResponse{UUID: u.String()}, http.StatusCreated)
 }
 
-// getTaskStatusHandler - обработчик получения статуса задачи
+// @Summary Get task status
+// @Description Returns the current status of a task by its ID
+// @Tags task
+// @Produce json
+// @Param task_id path string true "Task ID" format(uuid)
+// @Success 200 {object} types.GetStatusResponse
+// @Failure 400 {string} string "Invalid task ID format"
+// @Failure 404 {string} string "Task not found"
+// @Failure 500 {string} string "Internal server error"
+// @Router /status/{task_id} [get]
 func (th *TaskHandler) getTaskStatusHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.ParseUUID(r, "task_id")
 	if err != nil {
@@ -83,7 +98,15 @@ func (th *TaskHandler) getTaskStatusHandler(w http.ResponseWriter, r *http.Reque
 	utils.WriteJSON(w, types.GetStatusResponse{Status: status}, http.StatusOK)
 }
 
-// getTaskResultHandler - обработчик получения результата задачи
+// @Summary Get task result
+// @Description Returns the result of a completed task by its ID
+// @Tags task
+// @Produce json
+// @Param task_id path string true "Task ID" format(uuid)
+// @Success 200 {object} types.GetResultResponse
+// @Failure 400 {string} string "Invalid task ID format or internal error"
+// @Failure 404 {string} string "Task not found"
+// @Router /result/{task_id} [get]
 func (th *TaskHandler) getTaskResultHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.ParseUUID(r, "task_id")
 	if err != nil {
@@ -106,11 +129,6 @@ func (th *TaskHandler) getTaskResultHandler(w http.ResponseWriter, r *http.Reque
 
 // RegisterRoutes - регистрация ручек
 func (th *TaskHandler) RegisterRoutes(r chi.Router) {
-
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
 
 	r.Post("/task", th.createTaskHandler)
 
