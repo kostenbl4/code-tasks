@@ -19,10 +19,3 @@ func WriteJSON(w http.ResponseWriter, data any, status int) error {
 	return json.NewEncoder(w).Encode(data)
 }
 
-// WriteError - запись json ответа ошибки
-func WriteError(w http.ResponseWriter, status int, errMsg string) error {
-	type err struct {
-		Err string `json:"error"`
-	}
-	return WriteJSON(w, err{errMsg}, status)
-}

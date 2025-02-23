@@ -23,7 +23,7 @@ func NewTaskHandler(service usecases.Task) *TaskHandler {
 // someHeavyWork - возвращает рандомный набор байт через продолжительное время
 // - имитация работы другого сервиса с вычислениями
 func someHeavyWork() []byte {
-	time.Sleep(time.Second * time.Duration(3+rand.Intn(30)))
+	time.Sleep(time.Second * time.Duration(3+rand.Intn(10)))
 	res := make([]byte, 100)
 	for i := 0; i < len(res); i++ {
 		res[i] = byte(rand.Intn(100))
@@ -36,8 +36,8 @@ func someHeavyWork() []byte {
 // @Tags task
 // @Produce json
 // @Success 201 {object} types.CreateTaskResponse
-// @Failure 400 {string} string "Invalid request"
-// @Failure 500 {string} string "Internal server error"
+// @Failure 400 {object} types.ErrorResponse "Invalid request"
+// @Failure 500 {object} types.ErrorResponse "Internal server error"
 // @Router /task [post]
 func (th *TaskHandler) createTaskHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -74,23 +74,23 @@ func (th *TaskHandler) createTaskHandler(w http.ResponseWriter, r *http.Request)
 // @Produce json
 // @Param task_id path string true "Task ID" format(uuid)
 // @Success 200 {object} types.GetStatusResponse
-// @Failure 400 {string} string "Invalid task ID format"
-// @Failure 404 {string} string "Task not found"
-// @Failure 500 {string} string "Internal server error"
+// @Failure 400 {object} types.ErrorResponse "Invalid task ID format"
+// @Failure 404 {object} types.ErrorResponse "Task not found"
+// @Failure 500 {object} types.ErrorResponse "Internal server error"
 // @Router /status/{task_id} [get]
 func (th *TaskHandler) getTaskStatusHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.ParseUUID(r, "task_id")
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "Invalid task_id")
+		utils.WriteJSON(w, types.ErrorResponse{Error: "Invalid task_id"}, http.StatusBadRequest)
 		return
 	}
 
 	task, err := th.service.GetTask(id)
 	if err == repository.ErrTaskNotFound {
-		utils.WriteError(w, http.StatusNotFound, err.Error())
+		utils.WriteJSON(w, types.ErrorResponse{Error: err.Error()}, http.StatusNotFound)
 		return
 	} else if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "Internal error")
+		utils.WriteJSON(w, types.ErrorResponse{Error: "Internal error"}, http.StatusInternalServerError)
 		return
 	}
 	status := task.Status
@@ -104,22 +104,22 @@ func (th *TaskHandler) getTaskStatusHandler(w http.ResponseWriter, r *http.Reque
 // @Produce json
 // @Param task_id path string true "Task ID" format(uuid)
 // @Success 200 {object} types.GetResultResponse
-// @Failure 400 {string} string "Invalid task ID format or internal error"
-// @Failure 404 {string} string "Task not found"
+// @Failure 400 {object} types.ErrorResponse "Invalid task ID format or internal error"
+// @Failure 404 {object} types.ErrorResponse "Task not found"
 // @Router /result/{task_id} [get]
 func (th *TaskHandler) getTaskResultHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.ParseUUID(r, "task_id")
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "Invalid task_id")
+		utils.WriteJSON(w, types.ErrorResponse{Error: "Invalid task_id"}, http.StatusBadRequest)
 		return
 	}
 
 	task, err := th.service.GetTask(id)
 	if err == repository.ErrTaskNotFound {
-		utils.WriteError(w, http.StatusNotFound, err.Error())
+		utils.WriteJSON(w, types.ErrorResponse{Error: err.Error()}, http.StatusNotFound)
 		return
 	} else if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "Internal error")
+		utils.WriteJSON(w, types.ErrorResponse{Error: "Internal error"}, http.StatusInternalServerError)
 		return
 	}
 	result := task.Result

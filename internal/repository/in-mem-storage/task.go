@@ -1,6 +1,7 @@
 package inmemstorage
 
 import (
+	"sync"
 	"task-server/internal/domain"
 	"task-server/internal/repository"
 
@@ -9,41 +10,47 @@ import (
 
 // tasksStore - хранилище задач, конретная реализация интерфейса Storage, можеи быть заменена на другую реализацию
 type tasksStore struct {
-	// Хранилище задач в виде карты
-	tasks map[uuid.UUID]domain.Task
+	// Хранилище задач в виде sync.Map
+	tasks sync.Map
 }
 
 // Создает новое хранилище задач
 func NewTaskStore() *tasksStore { // либо Storage
-	return &tasksStore{tasks: make(map[uuid.UUID]domain.Task)}
+	return &tasksStore{}
 }
 
 // Создает новую задачу и добавляет её в хранилище
 func (ts *tasksStore) CreateTask() uuid.UUID {
-	uuid := uuid.New()
 
-	ts.tasks[uuid] = domain.Task{
-		UUID:   uuid,
-		Status: "in_progress",
+	id := uuid.New()
+	// проверка на то, что нового uuid нет среди существующих
+	for {
+		if _, ok := ts.tasks.Load(id); !ok {
+			break
+		}
+		id = uuid.New()
 	}
 
-	return uuid
+	ts.tasks.Store(id, domain.Task{
+		UUID:   id,
+		Status: "in_progress",
+	})
+
+	return id
 }
 
 // Возвращает задачу по её UUID, если она существует
 func (ts *tasksStore) GetTask(uuid uuid.UUID) (domain.Task, error) {
-	t, ok := ts.tasks[uuid]
-	if ok {
-		return t, nil
+	if t, ok := ts.tasks.Load(uuid); ok {
+		return t.(domain.Task), nil
 	}
 	return domain.Task{}, repository.ErrTaskNotFound
 }
 
 // Обновляет существующую задачу в хранилище
 func (ts *tasksStore) UpdateTask(task domain.Task) error {
-	_, ok := ts.tasks[task.UUID]
-	if ok {
-		ts.tasks[task.UUID] = task
+	if _, ok := ts.tasks.Load(task.UUID); ok {
+		ts.tasks.Store(task.UUID, task)
 		return nil
 	}
 	return repository.ErrTaskNotFound

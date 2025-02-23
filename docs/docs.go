@@ -45,13 +45,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid task ID format or internal error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Task not found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     }
                 }
@@ -87,19 +87,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid task ID format",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Task not found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     }
                 }
@@ -125,13 +125,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     }
                 }
@@ -143,6 +143,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "task_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
                     "type": "string"
                 }
             }

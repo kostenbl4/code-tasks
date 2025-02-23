@@ -5,6 +5,11 @@ definitions:
       task_id:
         type: string
     type: object
+  types.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
   types.GetResultResponse:
     properties:
       result:
@@ -44,11 +49,11 @@ paths:
         "400":
           description: Invalid task ID format or internal error
           schema:
-            type: string
+            $ref: '#/definitions/types.ErrorResponse'
         "404":
           description: Task not found
           schema:
-            type: string
+            $ref: '#/definitions/types.ErrorResponse'
       summary: Get task result
       tags:
       - task
@@ -72,15 +77,15 @@ paths:
         "400":
           description: Invalid task ID format
           schema:
-            type: string
+            $ref: '#/definitions/types.ErrorResponse'
         "404":
           description: Task not found
           schema:
-            type: string
+            $ref: '#/definitions/types.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            type: string
+            $ref: '#/definitions/types.ErrorResponse'
       summary: Get task status
       tags:
       - task
@@ -97,11 +102,11 @@ paths:
         "400":
           description: Invalid request
           schema:
-            type: string
+            $ref: '#/definitions/types.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            type: string
+            $ref: '#/definitions/types.ErrorResponse'
       summary: Create a task
       tags:
       - task
