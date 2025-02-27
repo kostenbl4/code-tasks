@@ -10,13 +10,13 @@ type CreateTaskResponse struct {
 	UUID string `json:"task_id"`
 }
 
-// GetStatusResponse - структура для выходных данных на запрос статуса задачи
-type GetStatusResponse struct {
+// GetTaskStatusResponse - структура для выходных данных на запрос статуса задачи
+type GetTaskStatusResponse struct {
 	Status string `json:"status"`
 }
 
-// GetResultResponse - структура для выходных данных на запрос результата задачи
-type GetResultResponse struct {
+// GetTaskResultResponse - структура для выходных данных на запрос результата задачи
+type GetTaskResultResponse struct {
 	Result []byte `json:"result"`
 }
 

@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"net/http"
 	"task-server/internal/api/http/types"
+	"task-server/internal/middleware/auth"
 	"task-server/internal/repository"
 	"task-server/internal/usecases"
 	"task-server/utils"
@@ -13,11 +14,12 @@ import (
 )
 
 type TaskHandler struct {
-	service usecases.Task
+	service  usecases.Task
+	smanager usecases.Session
 }
 
-func NewTaskHandler(service usecases.Task) *TaskHandler {
-	return &TaskHandler{service: service}
+func NewTaskHandler(service usecases.Task, smanager usecases.Session) *TaskHandler {
+	return &TaskHandler{service: service, smanager: smanager}
 }
 
 // someHeavyWork - возвращает рандомный набор байт через продолжительное время
@@ -73,7 +75,7 @@ func (th *TaskHandler) createTaskHandler(w http.ResponseWriter, r *http.Request)
 // @Tags task
 // @Produce json
 // @Param task_id path string true "Task ID" format(uuid)
-// @Success 200 {object} types.GetStatusResponse
+// @Success 200 {object} types.GetTaskStatusResponse
 // @Failure 400 {object} types.ErrorResponse "Invalid task ID format"
 // @Failure 404 {object} types.ErrorResponse "Task not found"
 // @Failure 500 {object} types.ErrorResponse "Internal server error"
@@ -95,7 +97,7 @@ func (th *TaskHandler) getTaskStatusHandler(w http.ResponseWriter, r *http.Reque
 	}
 	status := task.Status
 
-	utils.WriteJSON(w, types.GetStatusResponse{Status: status}, http.StatusOK)
+	utils.WriteJSON(w, types.GetTaskStatusResponse{Status: status}, http.StatusOK)
 }
 
 // @Summary Get task result
@@ -103,7 +105,7 @@ func (th *TaskHandler) getTaskStatusHandler(w http.ResponseWriter, r *http.Reque
 // @Tags task
 // @Produce json
 // @Param task_id path string true "Task ID" format(uuid)
-// @Success 200 {object} types.GetResultResponse
+// @Success 200 {object} types.GetTaskResultResponse
 // @Failure 400 {object} types.ErrorResponse "Invalid task ID format or internal error"
 // @Failure 404 {object} types.ErrorResponse "Task not found"
 // @Router /result/{task_id} [get]
@@ -124,15 +126,17 @@ func (th *TaskHandler) getTaskResultHandler(w http.ResponseWriter, r *http.Reque
 	}
 	result := task.Result
 
-	utils.WriteJSON(w, types.GetResultResponse{Result: result}, http.StatusOK)
+	utils.WriteJSON(w, types.GetTaskResultResponse{Result: result}, http.StatusOK)
 }
 
 // RegisterRoutes - регистрация ручек
 func (th *TaskHandler) RegisterRoutes(r chi.Router) {
 
-	r.Post("/task", th.createTaskHandler)
+	r.Group(func(r chi.Router) {
+		r.Use(auth.SessionMiddleware(th.smanager))
 
-	r.Get("/status/{task_id}", th.getTaskStatusHandler)
-
-	r.Get("/result/{task_id}", th.getTaskResultHandler)
+		r.Post("/task", th.createTaskHandler)
+		r.Get("/status/{task_id}", th.getTaskStatusHandler)
+		r.Get("/result/{task_id}", th.getTaskResultHandler)
+	})
 }

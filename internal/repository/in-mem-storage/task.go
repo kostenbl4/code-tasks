@@ -8,35 +8,20 @@ import (
 	"github.com/google/uuid"
 )
 
-// tasksStore - хранилище задач, конретная реализация интерфейса Storage, можеи быть заменена на другую реализацию
+// tasksStore - хранилище задач в оперативной памяти
 type tasksStore struct {
 	// Хранилище задач в виде sync.Map
 	tasks sync.Map
 }
 
 // Создает новое хранилище задач
-func NewTaskStore() *tasksStore { // либо Storage
+func NewTaskStore() *tasksStore {
 	return &tasksStore{}
 }
 
-// Создает новую задачу и добавляет её в хранилище
-func (ts *tasksStore) CreateTask() uuid.UUID {
-
-	id := uuid.New()
-	// проверка на то, что нового uuid нет среди существующих
-	for {
-		if _, ok := ts.tasks.Load(id); !ok {
-			break
-		}
-		id = uuid.New()
-	}
-
-	ts.tasks.Store(id, domain.Task{
-		UUID:   id,
-		Status: "in_progress",
-	})
-
-	return id
+// Добавляет новую задачу в хранилище
+func (ts *tasksStore) CreateTask(task domain.Task) {
+	ts.tasks.Store(task.UUID, task)
 }
 
 // Возвращает задачу по её UUID, если она существует

@@ -5,11 +5,14 @@ import (
 	"log"
 	"task-server/internal/api/http"
 	inmemstorage "task-server/internal/repository/in-mem-storage"
-	service "task-server/internal/usecases/task"
+	"task-server/internal/usecases/session"
+	"task-server/internal/usecases/task"
+	"task-server/internal/usecases/user"
 	httpServer "task-server/pkg/http"
 
-	httpSwagger "github.com/swaggo/http-swagger"
 	_ "task-server/docs"
+
+	httpSwagger "github.com/swaggo/http-swagger"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -30,14 +33,19 @@ func main() {
 		Addr: *addr,
 	}
 
-	// Создаем новое хранилище задач
-	repo := inmemstorage.NewTaskStore()
+	// Создаем хранилище, менеджер, сессий
+	sessionStore := inmemstorage.NewSessionStore()
+	sessionManager := session.NewSeessionManager(sessionStore, 3600)
 
-	// Создаем новый объект сервис - логики задач
-	service := service.NewTaskService(repo)
+	// Создаем хранилище, сервис, обработчик задач
+	taskStore := inmemstorage.NewTaskStore()
+	taskService := task.NewTaskService(taskStore)
+	taskHandler := http.NewTaskHandler(taskService, sessionManager)
 
-	// Создаем новый объект api обработчиков задач
-	handler := http.NewTaskHandler(service)
+	// Создаем хранилище, сервис, обработчик пользователей
+	userStore := inmemstorage.NewUserStore()
+	userService := user.NewUserService(userStore)
+	userHandler := http.NewUserHandler(userService, sessionManager)
 
 	// Создаем http роутер
 	r := chi.NewRouter()
@@ -51,7 +59,8 @@ func main() {
 	r.Mount("/swagger", httpSwagger.WrapHandler)
 
 	// Прикрепляем обработчики
-	handler.RegisterRoutes(r)
+	taskHandler.RegisterRoutes(r)
+	userHandler.RegisterRoutes(r)
 
 	// Создаем новый сервер с заданной конфигурацией и хранилищем
 	srv := httpServer.Server{

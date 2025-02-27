@@ -10,16 +10,35 @@ definitions:
       error:
         type: string
     type: object
-  types.GetResultResponse:
+  types.GetTaskResultResponse:
     properties:
       result:
         items:
           type: integer
         type: array
     type: object
-  types.GetStatusResponse:
+  types.GetTaskStatusResponse:
     properties:
       status:
+        type: string
+    type: object
+  types.LoginUserRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  types.LoginUserResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  types.RegisterUserRequest:
+    properties:
+      password:
+        type: string
+      username:
         type: string
     type: object
 host: localhost:8080
@@ -29,6 +48,74 @@ info:
   title: Task-server API
   version: "1.0"
 paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Logs in a user and returns a session token
+      parameters:
+      - description: User credentials
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/types.LoginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User logged in successfully
+          schema:
+            $ref: '#/definitions/types.LoginUserResponse'
+        "303":
+          description: User already logged in
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "400":
+          description: Invalid JSON
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: Incorrect login or password
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Login a user
+      tags:
+      - user
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user with a username and password
+      parameters:
+      - description: User credentials
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/types.RegisterUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid JSON
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal error or user already exists
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - user
   /result/{task_id}:
     get:
       description: Returns the result of a completed task by its ID
@@ -45,7 +132,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.GetResultResponse'
+            $ref: '#/definitions/types.GetTaskResultResponse'
         "400":
           description: Invalid task ID format or internal error
           schema:
@@ -73,7 +160,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.GetStatusResponse'
+            $ref: '#/definitions/types.GetTaskStatusResponse'
         "400":
           description: Invalid task ID format
           schema:

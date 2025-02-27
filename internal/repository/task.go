@@ -8,11 +8,8 @@ import (
 
 // Task - интерфейс для хранилища задач
 type Task interface {
-	// Создает новую задачу и возвращает её UUID
-	CreateTask() uuid.UUID
-	// Возвращает задачу по её UUID
+	CreateTask(domain.Task)
 	GetTask(uuid.UUID) (domain.Task, error)
-	// Обновляет существующую задачу
 	UpdateTask(domain.Task) error
 }
 

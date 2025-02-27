@@ -1,4 +1,4 @@
-package service
+package task
 
 import (
 	"task-server/internal/domain"
@@ -12,14 +12,27 @@ type tasksService struct {
 	repo repository.Task
 }
 
-// Создает новое хранилище задач
+// Создает новый сервис задач
 func NewTaskService(repo repository.Task) *tasksService { // либо Storage
 	return &tasksService{repo: repo}
 }
 
 // Создает новую задачу и добавляет её в хранилище
 func (ts *tasksService) CreateTask() uuid.UUID {
-	return ts.repo.CreateTask()
+	id := uuid.New()
+	// проверка на то, что нового uuid нет среди существующих
+	for {
+		if _, err := ts.repo.GetTask(id); err == repository.ErrTaskNotFound {
+			break
+		}
+		id = uuid.New()
+	}
+
+	ts.repo.CreateTask(domain.Task{
+		UUID:   id,
+		Status: "in_progress",
+	})
+	return id
 }
 
 // Возвращает задачу по её UUID, если она существует
