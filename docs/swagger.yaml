@@ -67,10 +67,6 @@ paths:
           description: User logged in successfully
           schema:
             $ref: '#/definitions/types.LoginUserResponse'
-        "303":
-          description: User already logged in
-          schema:
-            $ref: '#/definitions/types.ErrorResponse'
         "400":
           description: Invalid JSON
           schema:
@@ -106,11 +102,11 @@ paths:
           schema:
             type: string
         "400":
-          description: Invalid JSON
+          description: Invalid JSON or user already exists
           schema:
             $ref: '#/definitions/types.ErrorResponse'
         "500":
-          description: Internal error or user already exists
+          description: Internal error
           schema:
             $ref: '#/definitions/types.ErrorResponse'
       summary: Register a new user
@@ -124,6 +120,12 @@ paths:
         format: uuid
         in: path
         name: task_id
+        required: true
+        type: string
+      - default: Bearer <ваш_токен>
+        description: Bearer {token}
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -141,6 +143,8 @@ paths:
           description: Task not found
           schema:
             $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get task result
       tags:
       - task
@@ -152,6 +156,12 @@ paths:
         format: uuid
         in: path
         name: task_id
+        required: true
+        type: string
+      - default: Bearer <ваш_токен>
+        description: Bearer {token}
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -173,12 +183,21 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get task status
       tags:
       - task
   /task:
     post:
       description: Creates a new task and returns task ID
+      parameters:
+      - default: Bearer <ваш_токен>
+        description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -194,7 +213,14 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Create a task
       tags:
       - task
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

@@ -3,7 +3,6 @@ package session
 import (
 	"task-server/internal/domain"
 	"task-server/internal/repository"
-	"task-server/internal/usecases"
 	"task-server/utils"
 )
 
@@ -18,17 +17,17 @@ func NewSeessionManager(repo repository.Session, maxlifetime int64) *sessionMana
 
 func (sm *sessionManager) CreateSession(userID int64) (string, error) {
 
-	_, ok := sm.repo.GetSessionByUserId(userID)
+	s, ok := sm.repo.GetSessionByUserId(userID)
 	if ok {
-		return "", usecases.ErrSessionAlreadyExists
+		return s.SessionID, nil
 	}
 
 	sid, err := utils.GenerateSecureToken(32)
 	if err != nil {
 		return "", err
 	}
-	
-	s := domain.Session{UserID: userID, SessionID: sid}
+
+	s = domain.Session{UserID: userID, SessionID: sid}
 	err = sm.repo.CreateSession(s)
 	if err != nil {
 		return "", err

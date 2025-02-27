@@ -37,9 +37,11 @@ func someHeavyWork() []byte {
 // @Description Creates a new task and returns task ID
 // @Tags task
 // @Produce json
+// @Param Authorization header string true "Bearer {token}" default(Bearer <ваш_токен>)
 // @Success 201 {object} types.CreateTaskResponse
 // @Failure 400 {object} types.ErrorResponse "Invalid request"
 // @Failure 500 {object} types.ErrorResponse "Internal server error"
+// @Security BearerAuth
 // @Router /task [post]
 func (th *TaskHandler) createTaskHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -75,10 +77,12 @@ func (th *TaskHandler) createTaskHandler(w http.ResponseWriter, r *http.Request)
 // @Tags task
 // @Produce json
 // @Param task_id path string true "Task ID" format(uuid)
+// @Param Authorization header string true "Bearer {token}" default(Bearer <ваш_токен>)
 // @Success 200 {object} types.GetTaskStatusResponse
 // @Failure 400 {object} types.ErrorResponse "Invalid task ID format"
 // @Failure 404 {object} types.ErrorResponse "Task not found"
 // @Failure 500 {object} types.ErrorResponse "Internal server error"
+// @Security BearerAuth
 // @Router /status/{task_id} [get]
 func (th *TaskHandler) getTaskStatusHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.ParseUUID(r, "task_id")
@@ -105,9 +109,11 @@ func (th *TaskHandler) getTaskStatusHandler(w http.ResponseWriter, r *http.Reque
 // @Tags task
 // @Produce json
 // @Param task_id path string true "Task ID" format(uuid)
+// @Param Authorization header string true "Bearer {token}" default(Bearer <ваш_токен>)
 // @Success 200 {object} types.GetTaskResultResponse
 // @Failure 400 {object} types.ErrorResponse "Invalid task ID format or internal error"
 // @Failure 404 {object} types.ErrorResponse "Task not found"
+// @Security BearerAuth
 // @Router /result/{task_id} [get]
 func (th *TaskHandler) getTaskResultHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.ParseUUID(r, "task_id")

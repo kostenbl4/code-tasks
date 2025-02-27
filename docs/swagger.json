@@ -40,12 +40,6 @@
                             "$ref": "#/definitions/types.LoginUserResponse"
                         }
                     },
-                    "303": {
-                        "description": "User already logged in",
-                        "schema": {
-                            "$ref": "#/definitions/types.ErrorResponse"
-                        }
-                    },
                     "400": {
                         "description": "Invalid JSON",
                         "schema": {
@@ -99,13 +93,13 @@
                         }
                     },
                     "400": {
-                        "description": "Invalid JSON",
+                        "description": "Invalid JSON or user already exists",
                         "schema": {
                             "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal error or user already exists",
+                        "description": "Internal error",
                         "schema": {
                             "$ref": "#/definitions/types.ErrorResponse"
                         }
@@ -115,6 +109,11 @@
         },
         "/result/{task_id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns the result of a completed task by its ID",
                 "produces": [
                     "application/json"
@@ -130,6 +129,14 @@
                         "description": "Task ID",
                         "name": "task_id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cваш_токен\u003e",
+                        "description": "Bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -157,6 +164,11 @@
         },
         "/status/{task_id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns the current status of a task by its ID",
                 "produces": [
                     "application/json"
@@ -172,6 +184,14 @@
                         "description": "Task ID",
                         "name": "task_id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cваш_токен\u003e",
+                        "description": "Bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -205,6 +225,11 @@
         },
         "/task": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates a new task and returns task ID",
                 "produces": [
                     "application/json"
@@ -213,6 +238,16 @@
                     "task"
                 ],
                 "summary": "Create a task",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cваш_токен\u003e",
+                        "description": "Bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "Created",
@@ -301,6 +336,13 @@
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }

@@ -26,8 +26,8 @@ func NewUserHandler(service usecases.User, smanager usecases.Session) *UserHandl
 // @Produce json
 // @Param user body types.RegisterUserRequest true "User credentials"
 // @Success 201 {string} string "User registered successfully"
-// @Failure 400 {object} types.ErrorResponse "Invalid JSON"
-// @Failure 500 {object} types.ErrorResponse "Internal error or user already exists"
+// @Failure 400 {object} types.ErrorResponse "Invalid JSON or user already exists"
+// @Failure 500 {object} types.ErrorResponse "Internal error"
 // @Router /register [post]
 func (usrh *UserHandler) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var in types.RegisterUserRequest
@@ -40,7 +40,7 @@ func (usrh *UserHandler) registerUserHandler(w http.ResponseWriter, r *http.Requ
 
 	_, err = usrh.service.RegisterUser(in.Username, in.Password)
 	if err == usecases.ErrUserAlreadyExists {
-		utils.WriteJSON(w, types.ErrorResponse{Error: err.Error()}, http.StatusInternalServerError)
+		utils.WriteJSON(w, types.ErrorResponse{Error: err.Error()}, http.StatusBadRequest)
 		return
 	} else if err != nil {
 		utils.WriteJSON(w, types.ErrorResponse{Error: "Internal error"}, http.StatusInternalServerError)
@@ -59,7 +59,6 @@ func (usrh *UserHandler) registerUserHandler(w http.ResponseWriter, r *http.Requ
 // @Success 200 {object} types.LoginUserResponse "User logged in successfully"
 // @Failure 400 {object} types.ErrorResponse "Invalid JSON"
 // @Failure 401 {object} types.ErrorResponse "Incorrect login or password"
-// @Failure 303 {object} types.ErrorResponse "User already logged in"
 // @Failure 500 {object} types.ErrorResponse "Internal error"
 // @Router /login [post]
 func (usrh *UserHandler) loginUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -81,10 +80,7 @@ func (usrh *UserHandler) loginUserHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	token, err := usrh.smanager.CreateSession(id)
-	if err == usecases.ErrSessionAlreadyExists {
-		utils.WriteJSON(w, types.ErrorResponse{Error: "User already logged in"}, http.StatusSeeOther)
-		return
-	} else if err != nil {
+	if err != nil {
 		utils.WriteJSON(w, types.ErrorResponse{Error: "Internal error"}, http.StatusInternalServerError)
 		return
 	}

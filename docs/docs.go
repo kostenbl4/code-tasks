@@ -46,12 +46,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/types.LoginUserResponse"
                         }
                     },
-                    "303": {
-                        "description": "User already logged in",
-                        "schema": {
-                            "$ref": "#/definitions/types.ErrorResponse"
-                        }
-                    },
                     "400": {
                         "description": "Invalid JSON",
                         "schema": {
@@ -105,13 +99,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid JSON",
+                        "description": "Invalid JSON or user already exists",
                         "schema": {
                             "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal error or user already exists",
+                        "description": "Internal error",
                         "schema": {
                             "$ref": "#/definitions/types.ErrorResponse"
                         }
@@ -121,6 +115,11 @@ const docTemplate = `{
         },
         "/result/{task_id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns the result of a completed task by its ID",
                 "produces": [
                     "application/json"
@@ -136,6 +135,14 @@ const docTemplate = `{
                         "description": "Task ID",
                         "name": "task_id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cваш_токен\u003e",
+                        "description": "Bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -163,6 +170,11 @@ const docTemplate = `{
         },
         "/status/{task_id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns the current status of a task by its ID",
                 "produces": [
                     "application/json"
@@ -178,6 +190,14 @@ const docTemplate = `{
                         "description": "Task ID",
                         "name": "task_id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cваш_токен\u003e",
+                        "description": "Bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -211,6 +231,11 @@ const docTemplate = `{
         },
         "/task": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates a new task and returns task ID",
                 "produces": [
                     "application/json"
@@ -219,6 +244,16 @@ const docTemplate = `{
                     "task"
                 ],
                 "summary": "Create a task",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cваш_токен\u003e",
+                        "description": "Bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "Created",
@@ -307,6 +342,13 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`
