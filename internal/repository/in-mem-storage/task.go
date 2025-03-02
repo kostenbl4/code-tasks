@@ -15,7 +15,7 @@ type tasksStore struct {
 }
 
 // Создает новое хранилище задач
-func NewTaskStore() *tasksStore {
+func NewTaskStore() repository.Task {
 	return &tasksStore{}
 }
 
@@ -29,7 +29,7 @@ func (ts *tasksStore) GetTask(uuid uuid.UUID) (domain.Task, error) {
 	if t, ok := ts.tasks.Load(uuid); ok {
 		return t.(domain.Task), nil
 	}
-	return domain.Task{}, repository.ErrTaskNotFound
+	return domain.Task{}, domain.ErrTaskNotFound
 }
 
 // Обновляет существующую задачу в хранилище
@@ -38,5 +38,5 @@ func (ts *tasksStore) UpdateTask(task domain.Task) error {
 		ts.tasks.Store(task.UUID, task)
 		return nil
 	}
-	return repository.ErrTaskNotFound
+	return domain.ErrTaskNotFound
 }

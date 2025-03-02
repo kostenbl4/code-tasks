@@ -8,6 +8,8 @@ import (
 	"task-server/utils"
 )
 
+var authPrefix = "Bearer "
+
 func SessionMiddleware(smanager usecases.Session) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -17,12 +19,12 @@ func SessionMiddleware(smanager usecases.Session) func(http.Handler) http.Handle
 				return
 			}
 
-			if !strings.HasPrefix(authHeader, "Bearer ") {
+			if !strings.HasPrefix(authHeader, authPrefix) {
 				utils.WriteJSON(w, types.ErrorResponse{Error: "Invalid token format"}, http.StatusUnauthorized)
 				return
 			}
 
-			token := strings.TrimPrefix(authHeader, "Bearer ")
+			token := strings.TrimPrefix(authHeader, authPrefix)
 
 			_, err := smanager.GetSessionByID(token)
 			if err != nil {

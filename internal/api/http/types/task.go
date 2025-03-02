@@ -20,7 +20,3 @@ type GetTaskResultResponse struct {
 	Result []byte `json:"result"`
 }
 
-// ErrorResponse - структура для выходных данных в случае ошибки
-type ErrorResponse struct {
-	Error string `json:"error"`
-}

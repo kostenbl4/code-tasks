@@ -3,7 +3,12 @@ package session
 import (
 	"task-server/internal/domain"
 	"task-server/internal/repository"
+	"task-server/internal/usecases"
 	"task-server/utils"
+)
+
+const (
+	SessionTokenLength = 32
 )
 
 type sessionManager struct {
@@ -11,7 +16,7 @@ type sessionManager struct {
 	maxlifetime int64
 }
 
-func NewSeessionManager(repo repository.Session, maxlifetime int64) *sessionManager {
+func NewSeessionManager(repo repository.Session, maxlifetime int64) usecases.Session {
 	return &sessionManager{repo: repo, maxlifetime: maxlifetime}
 }
 
@@ -22,7 +27,7 @@ func (sm *sessionManager) CreateSession(userID int64) (string, error) {
 		return s.SessionID, nil
 	}
 
-	sid, err := utils.GenerateSecureToken(32)
+	sid, err := utils.GenerateSecureToken(SessionTokenLength)
 	if err != nil {
 		return "", err
 	}

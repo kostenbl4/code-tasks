@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"task-server/internal/api/http/types"
 	"task-server/internal/middleware/auth"
-	"task-server/internal/repository"
 	"task-server/internal/usecases"
 	"task-server/utils"
 	"time"
@@ -92,16 +91,12 @@ func (th *TaskHandler) getTaskStatusHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	task, err := th.service.GetTask(id)
-	if err == repository.ErrTaskNotFound {
-		utils.WriteJSON(w, types.ErrorResponse{Error: err.Error()}, http.StatusNotFound)
-		return
-	} else if err != nil {
-		utils.WriteJSON(w, types.ErrorResponse{Error: "Internal error"}, http.StatusInternalServerError)
+	if err != nil {
+		types.HandleError(w, err)
 		return
 	}
-	status := task.Status
 
-	utils.WriteJSON(w, types.GetTaskStatusResponse{Status: status}, http.StatusOK)
+	utils.WriteJSON(w, types.GetTaskStatusResponse{Status: task.Status}, http.StatusOK)
 }
 
 // @Summary Get task result
@@ -123,16 +118,12 @@ func (th *TaskHandler) getTaskResultHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	task, err := th.service.GetTask(id)
-	if err == repository.ErrTaskNotFound {
-		utils.WriteJSON(w, types.ErrorResponse{Error: err.Error()}, http.StatusNotFound)
-		return
-	} else if err != nil {
-		utils.WriteJSON(w, types.ErrorResponse{Error: "Internal error"}, http.StatusInternalServerError)
+	if err != nil {
+		types.HandleError(w, err)
 		return
 	}
-	result := task.Result
 
-	utils.WriteJSON(w, types.GetTaskResultResponse{Result: result}, http.StatusOK)
+	utils.WriteJSON(w, types.GetTaskResultResponse{Result: task.Result}, http.StatusOK)
 }
 
 // RegisterRoutes - регистрация ручек

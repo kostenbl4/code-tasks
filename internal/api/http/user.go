@@ -3,7 +3,6 @@ package http
 import (
 	"net/http"
 	"task-server/internal/api/http/types"
-	"task-server/internal/repository"
 	"task-server/internal/usecases"
 	"task-server/utils"
 
@@ -30,20 +29,15 @@ func NewUserHandler(service usecases.User, smanager usecases.Session) *UserHandl
 // @Failure 500 {object} types.ErrorResponse "Internal error"
 // @Router /register [post]
 func (usrh *UserHandler) registerUserHandler(w http.ResponseWriter, r *http.Request) {
-	var in types.RegisterUserRequest
-
-	err := utils.ReadJSON(r, &in)
+	in, err := types.GetRegisterUserRequest(r)
 	if err != nil {
 		utils.WriteJSON(w, types.ErrorResponse{Error: "Invalid json"}, http.StatusBadRequest)
 		return
 	}
 
 	_, err = usrh.service.RegisterUser(in.Username, in.Password)
-	if err == usecases.ErrUserAlreadyExists {
-		utils.WriteJSON(w, types.ErrorResponse{Error: err.Error()}, http.StatusBadRequest)
-		return
-	} else if err != nil {
-		utils.WriteJSON(w, types.ErrorResponse{Error: "Internal error"}, http.StatusInternalServerError)
+	if err != nil {
+		types.HandleError(w, err)
 		return
 	}
 
@@ -62,26 +56,21 @@ func (usrh *UserHandler) registerUserHandler(w http.ResponseWriter, r *http.Requ
 // @Failure 500 {object} types.ErrorResponse "Internal error"
 // @Router /login [post]
 func (usrh *UserHandler) loginUserHandler(w http.ResponseWriter, r *http.Request) {
-	var in types.LoginUserRequest
-
-	err := utils.ReadJSON(r, &in)
+	in, err := types.GetLoginUserRequest(r)
 	if err != nil {
 		utils.WriteJSON(w, types.ErrorResponse{Error: "Invalid json"}, http.StatusBadRequest)
 		return
 	}
 
 	id, err := usrh.service.LoginUser(in.Username, in.Password)
-	if err == usecases.ErrIncorrectPassword || err == repository.ErrUserNotFound {
-		utils.WriteJSON(w, types.ErrorResponse{Error: "Incorrect login or password"}, http.StatusUnauthorized)
-		return
-	} else if err != nil {
-		utils.WriteJSON(w, types.ErrorResponse{Error: "Internal error"}, http.StatusInternalServerError)
+	if err != nil {
+		types.HandleError(w, err)
 		return
 	}
 
 	token, err := usrh.smanager.CreateSession(id)
 	if err != nil {
-		utils.WriteJSON(w, types.ErrorResponse{Error: "Internal error"}, http.StatusInternalServerError)
+		types.HandleError(w, err)
 		return
 	}
 

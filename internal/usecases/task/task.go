@@ -3,6 +3,7 @@ package task
 import (
 	"task-server/internal/domain"
 	"task-server/internal/repository"
+	"task-server/internal/usecases"
 
 	"github.com/google/uuid"
 )
@@ -13,7 +14,7 @@ type tasksService struct {
 }
 
 // Создает новый сервис задач
-func NewTaskService(repo repository.Task) *tasksService { // либо Storage
+func NewTaskService(repo repository.Task)  usecases.Task{ 
 	return &tasksService{repo: repo}
 }
 
@@ -22,7 +23,7 @@ func (ts *tasksService) CreateTask() uuid.UUID {
 	id := uuid.New()
 	// проверка на то, что нового uuid нет среди существующих
 	for {
-		if _, err := ts.repo.GetTask(id); err == repository.ErrTaskNotFound {
+		if _, err := ts.repo.GetTask(id); err == domain.ErrTaskNotFound {
 			break
 		}
 		id = uuid.New()

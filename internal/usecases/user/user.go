@@ -9,20 +9,19 @@ import (
 
 // userService - сервис задач, конретная реализация интерфейса Task, может быть заменена на другую реализацию
 type userService struct {
-	repo      repository.User
-	userCount int64
+	repo repository.User
 }
 
 // Создает новый сервис пользователей
-func NewUserService(repo repository.User) *userService { // либо Storage
+func NewUserService(repo repository.User) usecases.User {
 	return &userService{repo: repo}
 }
 
 // Создает нового пользователя и добавляет его в хранилище
 func (us *userService) RegisterUser(username, password string) (int64, error) {
 	_, err := us.repo.GetUserByUsername(username)
-	if err != repository.ErrUserNotFound {
-		return -1, usecases.ErrUserAlreadyExists
+	if err != domain.ErrUserNotFound {
+		return -1, domain.ErrUserAlreadyExists
 	}
 
 	hashedPassword, err := utils.HashPassword(password)
@@ -31,7 +30,6 @@ func (us *userService) RegisterUser(username, password string) (int64, error) {
 	}
 
 	user := domain.User{
-		ID:    us.userCount + 1,
 		Login: username,
 		Hpass: hashedPassword,
 	}
@@ -40,7 +38,6 @@ func (us *userService) RegisterUser(username, password string) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	us.userCount++
 
 	return user.ID, nil
 }
@@ -49,12 +46,11 @@ func (us *userService) RegisterUser(username, password string) (int64, error) {
 func (us *userService) LoginUser(username, password string) (int64, error) {
 
 	u, err := us.repo.GetUserByUsername(username)
-
 	if err != nil {
 		return -1, err
 	}
 	if !utils.CheckPassword(u.Hpass, password) {
-		return -1, usecases.ErrIncorrectPassword
+		return -1, domain.ErrIncorrectPassword
 	}
 
 	return u.ID, nil

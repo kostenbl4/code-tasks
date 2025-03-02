@@ -10,7 +10,7 @@ type sessionStore struct {
 	sessions sync.Map
 }
 
-func NewSessionStore() *sessionStore {
+func NewSessionStore() repository.Session {
 	return &sessionStore{}
 }
 
@@ -22,16 +22,23 @@ func (ss *sessionStore) CreateSession(session domain.Session) error {
 func (ss *sessionStore) GetSession(id string) (domain.Session, error) {
 	value, ok := ss.sessions.Load(id)
 	if !ok {
-		return domain.Session{}, repository.ErrSessionNotFound
+		return domain.Session{}, domain.ErrSessionNotFound
 	}
-	return value.(domain.Session), nil
+	session, ok := value.(domain.Session)
+	if !ok {
+		return domain.Session{}, domain.ErrSessionNotFound
+	}
+	return session, nil
 }
 
 func (ss *sessionStore) GetSessionByUserId(userID int64) (domain.Session, bool) {
 	var s domain.Session
 	found := false
 	ss.sessions.Range(func(key, value interface{}) bool {
-		session := value.(domain.Session)
+		session, ok := value.(domain.Session)
+		if !ok {
+			return false
+		}
 		if session.UserID == userID {
 			s = session
 			found = true
@@ -45,5 +52,3 @@ func (ss *sessionStore) DeleteSession(id string) error {
 	ss.sessions.Delete(id)
 	return nil
 }
-
-
