@@ -120,19 +120,19 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns the result of a completed task by its ID",
+                "description": "Returns the result of a completed task using its unique ID.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "task"
                 ],
-                "summary": "Get task result",
+                "summary": "Retrieve task result",
                 "parameters": [
                     {
                         "type": "string",
                         "format": "uuid",
-                        "description": "Task ID",
+                        "description": "Unique Task ID",
                         "name": "task_id",
                         "in": "path",
                         "required": true
@@ -148,7 +148,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Task result",
                         "schema": {
                             "$ref": "#/definitions/types.GetTaskResultResponse"
                         }
@@ -164,6 +164,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/types.ErrorResponse"
                         }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -175,19 +181,19 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns the current status of a task by its ID",
+                "description": "Fetches the current status of a task using its unique ID.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "task"
                 ],
-                "summary": "Get task status",
+                "summary": "Retrieve task status",
                 "parameters": [
                     {
                         "type": "string",
                         "format": "uuid",
-                        "description": "Task ID",
+                        "description": "Unique Task ID",
                         "name": "task_id",
                         "in": "path",
                         "required": true
@@ -203,7 +209,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Current task status",
                         "schema": {
                             "$ref": "#/definitions/types.GetTaskStatusResponse"
                         }
@@ -236,14 +242,17 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Creates a new task and returns task ID",
+                "description": "Creates a new task with the provided translator and code, and returns the unique task ID.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "task"
                 ],
-                "summary": "Create a task",
+                "summary": "Create a new task",
                 "parameters": [
                     {
                         "type": "string",
@@ -252,17 +261,26 @@ const docTemplate = `{
                         "name": "Authorization",
                         "in": "header",
                         "required": true
+                    },
+                    {
+                        "description": "Task creation request payload",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.CreateTaskRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Task successfully created",
                         "schema": {
                             "$ref": "#/definitions/types.CreateTaskResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid request",
+                        "description": "Invalid request payload",
                         "schema": {
                             "$ref": "#/definitions/types.ErrorResponse"
                         }
@@ -278,6 +296,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "types.CreateTaskRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "translator": {
+                    "type": "string"
+                }
+            }
+        },
         "types.CreateTaskResponse": {
             "type": "object",
             "properties": {
@@ -298,10 +327,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "result": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                    "$ref": "#/definitions/types.TaskResult"
                 }
             }
         },
@@ -339,6 +365,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.TaskResult": {
+            "type": "object",
+            "properties": {
+                "stderr": {
+                    "type": "string"
+                },
+                "stdout": {
                     "type": "string"
                 }
             }

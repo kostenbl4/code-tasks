@@ -5,9 +5,12 @@ import (
 	"log"
 	"task-server/internal/api/http"
 	inmemstorage "task-server/internal/repository/in-mem-storage"
+	rabbitconsumer "task-server/internal/repository/rabbit_consumer"
+	rabbitsender "task-server/internal/repository/rabbit_sender"
 	"task-server/internal/usecases/session"
 	"task-server/internal/usecases/task"
 	"task-server/internal/usecases/user"
+	"task-server/pkg/broker"
 	httpServer "task-server/pkg/http"
 
 	_ "task-server/docs"
@@ -43,8 +46,31 @@ func main() {
 
 	// Создаем хранилище, сервис, обработчик задач
 	taskStore := inmemstorage.NewTaskStore()
-	taskService := task.NewTaskService(taskStore)
+
+	sendConn, err := broker.ConnectRabbitMQ("guest", "guest", "localhost:5672", "")
+	if err != nil {
+		log.Fatal(err)
+	}
+	sendClient, err := broker.NewRabbitClient(sendConn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	taskSender := rabbitsender.New(sendClient)
+
+	consumeConn, err := broker.ConnectRabbitMQ("guest", "guest", "localhost:5672", "")
+	if err != nil {
+		log.Fatal(err)
+	}
+	consumeClient, err := broker.NewRabbitClient(consumeConn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	taskConsumer := rabbitconsumer.New(consumeClient)
+
+	taskService := task.NewTaskService(taskStore, taskSender, taskConsumer)
 	taskHandler := http.NewTaskHandler(taskService, sessionManager)
+
+	go taskService.ListenTaskProcessor()
 
 	// Создаем хранилище, сервис, обработчик пользователей
 	userStore := inmemstorage.NewUserStore()

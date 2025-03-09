@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  types.CreateTaskRequest:
+    properties:
+      code:
+        type: string
+      translator:
+        type: string
+    type: object
   types.CreateTaskResponse:
     properties:
       task_id:
@@ -13,9 +20,7 @@ definitions:
   types.GetTaskResultResponse:
     properties:
       result:
-        items:
-          type: integer
-        type: array
+        $ref: '#/definitions/types.TaskResult'
     type: object
   types.GetTaskStatusResponse:
     properties:
@@ -39,6 +44,13 @@ definitions:
       password:
         type: string
       username:
+        type: string
+    type: object
+  types.TaskResult:
+    properties:
+      stderr:
+        type: string
+      stdout:
         type: string
     type: object
 host: localhost:8080
@@ -114,9 +126,9 @@ paths:
       - user
   /result/{task_id}:
     get:
-      description: Returns the result of a completed task by its ID
+      description: Returns the result of a completed task using its unique ID.
       parameters:
-      - description: Task ID
+      - description: Unique Task ID
         format: uuid
         in: path
         name: task_id
@@ -132,7 +144,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Task result
           schema:
             $ref: '#/definitions/types.GetTaskResultResponse'
         "400":
@@ -143,16 +155,20 @@ paths:
           description: Task not found
           schema:
             $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Get task result
+      summary: Retrieve task result
       tags:
       - task
   /status/{task_id}:
     get:
-      description: Returns the current status of a task by its ID
+      description: Fetches the current status of a task using its unique ID.
       parameters:
-      - description: Task ID
+      - description: Unique Task ID
         format: uuid
         in: path
         name: task_id
@@ -168,7 +184,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Current task status
           schema:
             $ref: '#/definitions/types.GetTaskStatusResponse'
         "400":
@@ -185,12 +201,15 @@ paths:
             $ref: '#/definitions/types.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Get task status
+      summary: Retrieve task status
       tags:
       - task
   /task:
     post:
-      description: Creates a new task and returns task ID
+      consumes:
+      - application/json
+      description: Creates a new task with the provided translator and code, and returns
+        the unique task ID.
       parameters:
       - default: Bearer <ваш_токен>
         description: Bearer {token}
@@ -198,15 +217,21 @@ paths:
         name: Authorization
         required: true
         type: string
+      - description: Task creation request payload
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateTaskRequest'
       produces:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Task successfully created
           schema:
             $ref: '#/definitions/types.CreateTaskResponse'
         "400":
-          description: Invalid request
+          description: Invalid request payload
           schema:
             $ref: '#/definitions/types.ErrorResponse'
         "500":
@@ -215,7 +240,7 @@ paths:
             $ref: '#/definitions/types.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Create a task
+      summary: Create a new task
       tags:
       - task
 securityDefinitions:

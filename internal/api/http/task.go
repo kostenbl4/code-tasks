@@ -1,13 +1,11 @@
 package http
 
 import (
-	"math/rand"
 	"net/http"
 	"task-server/internal/api/http/types"
 	"task-server/internal/middleware/auth"
 	"task-server/internal/usecases"
 	"task-server/utils"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -21,63 +19,49 @@ func NewTaskHandler(service usecases.Task, smanager usecases.Session) *TaskHandl
 	return &TaskHandler{service: service, smanager: smanager}
 }
 
-// someHeavyWork - возвращает рандомный набор байт через продолжительное время
-// - имитация работы другого сервиса с вычислениями
-func someHeavyWork() []byte {
-	time.Sleep(time.Second * time.Duration(3+rand.Intn(10)))
-	res := make([]byte, 100)
-	for i := 0; i < len(res); i++ {
-		res[i] = byte(rand.Intn(100))
-	}
-	return res
-}
-
-// @Summary Create a task
-// @Description Creates a new task and returns task ID
+// @Summary Create a new task
+// @Description Creates a new task with the provided translator and code, and returns the unique task ID.
 // @Tags task
+// @Accept json
 // @Produce json
 // @Param Authorization header string true "Bearer {token}" default(Bearer <ваш_токен>)
-// @Success 201 {object} types.CreateTaskResponse
-// @Failure 400 {object} types.ErrorResponse "Invalid request"
+// @Param task body types.CreateTaskRequest true "Task creation request payload"
+// @Success 201 {object} types.CreateTaskResponse "Task successfully created"
+// @Failure 400 {object} types.ErrorResponse "Invalid request payload"
 // @Failure 500 {object} types.ErrorResponse "Internal server error"
 // @Security BearerAuth
 // @Router /task [post]
 func (th *TaskHandler) createTaskHandler(w http.ResponseWriter, r *http.Request) {
 
-	// var in types.CreateTaskRequest // читаем json в случае если передаются данные для обработки
-	// err := utils.ReadJSON(r, &in)
+	var in types.CreateTaskRequest // читаем json в случае если передаются данные для обработки
+	err := utils.ReadJSON(r, &in)
+	if err != nil {
+		utils.WriteJSON(w, types.ErrorResponse{Error: "Bad request"}, http.StatusBadRequest)
+		return
+	}
 
-	// if err != nil {
-	// 	utils.WriteError(w, http.StatusBadRequest, "failed to read json"+err.Error())
-	// 	return
-	// }
+	task, err := th.service.CreateTask(in.Translator, in.Code)
+	if err != nil {
+		types.HandleError(w, err)
+		return
+	}
 
-	u := th.service.CreateTask()
+	err = th.service.SendTask(task)
+	if err != nil {
+		types.HandleError(w, err)
+		return
+	}
 
-	go func() {
-		res := someHeavyWork()
-		t, err := th.service.GetTask(u)
-		if err != nil {
-			return
-		}
-		t.Status = "ready"
-		t.Result = res
-		err = th.service.UpdateTask(t)
-		if err != nil {
-			return
-		}
-	}()
-
-	utils.WriteJSON(w, types.CreateTaskResponse{UUID: u.String()}, http.StatusCreated)
+	utils.WriteJSON(w, types.CreateTaskResponse{UUID: task.UUID.String()}, http.StatusCreated)
 }
 
-// @Summary Get task status
-// @Description Returns the current status of a task by its ID
+// @Summary Retrieve task status
+// @Description Fetches the current status of a task using its unique ID.
 // @Tags task
 // @Produce json
-// @Param task_id path string true "Task ID" format(uuid)
+// @Param task_id path string true "Unique Task ID" format(uuid)
 // @Param Authorization header string true "Bearer {token}" default(Bearer <ваш_токен>)
-// @Success 200 {object} types.GetTaskStatusResponse
+// @Success 200 {object} types.GetTaskStatusResponse "Current task status"
 // @Failure 400 {object} types.ErrorResponse "Invalid task ID format"
 // @Failure 404 {object} types.ErrorResponse "Task not found"
 // @Failure 500 {object} types.ErrorResponse "Internal server error"
@@ -99,15 +83,16 @@ func (th *TaskHandler) getTaskStatusHandler(w http.ResponseWriter, r *http.Reque
 	utils.WriteJSON(w, types.GetTaskStatusResponse{Status: task.Status}, http.StatusOK)
 }
 
-// @Summary Get task result
-// @Description Returns the result of a completed task by its ID
+// @Summary Retrieve task result
+// @Description Returns the result of a completed task using its unique ID.
 // @Tags task
 // @Produce json
-// @Param task_id path string true "Task ID" format(uuid)
+// @Param task_id path string true "Unique Task ID" format(uuid)
 // @Param Authorization header string true "Bearer {token}" default(Bearer <ваш_токен>)
-// @Success 200 {object} types.GetTaskResultResponse
+// @Success 200 {object} types.GetTaskResultResponse "Task result"
 // @Failure 400 {object} types.ErrorResponse "Invalid task ID format or internal error"
 // @Failure 404 {object} types.ErrorResponse "Task not found"
+// @Failure 500 {object} types.ErrorResponse "Internal server error"
 // @Security BearerAuth
 // @Router /result/{task_id} [get]
 func (th *TaskHandler) getTaskResultHandler(w http.ResponseWriter, r *http.Request) {
@@ -123,7 +108,7 @@ func (th *TaskHandler) getTaskResultHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	utils.WriteJSON(w, types.GetTaskResultResponse{Result: task.Result}, http.StatusOK)
+	utils.WriteJSON(w, types.CreateGetTaskResultResponse(task), http.StatusOK)
 }
 
 // RegisterRoutes - регистрация ручек
