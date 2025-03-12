@@ -6,6 +6,7 @@ import (
 	"log"
 	"task-server/internal/domain"
 	"task-server/internal/repository"
+	rabbitconsumer "task-server/internal/repository/rabbit_consumer"
 	"task-server/pkg/broker"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -29,7 +30,7 @@ func (rs rabbitmqSender) Send(ctx context.Context, task domain.Task) error {
 	return rs.client.Send(ctx, "code_requests", "code.process", amqp.Publishing{
 		ContentType:   "application/json",
 		DeliveryMode:  amqp.Persistent,
-		ReplyTo:       "code.process.results",
+		ReplyTo:       rabbitconsumer.ReplyQueue,
 		CorrelationId: task.UUID.String(),
 		Body:          data,
 	})

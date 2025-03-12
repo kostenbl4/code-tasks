@@ -326,8 +326,9 @@ const docTemplate = `{
         "types.GetTaskResultResponse": {
             "type": "object",
             "properties": {
+                "data": {},
                 "result": {
-                    "$ref": "#/definitions/types.TaskResult"
+                    "type": "string"
                 }
             }
         },
@@ -365,17 +366,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.TaskResult": {
-            "type": "object",
-            "properties": {
-                "stderr": {
-                    "type": "string"
-                },
-                "stdout": {
                     "type": "string"
                 }
             }

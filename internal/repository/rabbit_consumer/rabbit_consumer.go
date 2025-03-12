@@ -9,6 +9,8 @@ import (
 	"task-server/pkg/broker"
 )
 
+var ReplyQueue = ""
+
 type rabbitmqConsumer struct {
 	client broker.RabbitClient
 }
@@ -20,7 +22,8 @@ func New(client broker.RabbitClient) repository.TaskConsumer {
 
 func (rc rabbitmqConsumer) Consume() (<-chan domain.Task, error) {
 
-	queue, err := rc.client.CreateQueue("code.process.results", true, false)
+	queue, err := rc.client.CreateQueue("", true, true)
+	ReplyQueue = queue.Name
 
 	if err != nil {
 		return nil, err
@@ -33,7 +36,7 @@ func (rc rabbitmqConsumer) Consume() (<-chan domain.Task, error) {
 		return nil, err
 	}
 
-	out := make(chan domain.Task)
+	out := make(chan domain.Task, 100)
 
 	var task domain.Task
 	go func() {
@@ -44,9 +47,6 @@ func (rc rabbitmqConsumer) Consume() (<-chan domain.Task, error) {
 				log.Println("Ack message failed")
 				continue
 			}
-
-			log.Printf("result: %v", string(msg.Body))
-
 			if err := json.Unmarshal(msg.Body, &task); err != nil {
 				log.Println(err)
 				continue

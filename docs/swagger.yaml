@@ -19,8 +19,9 @@ definitions:
     type: object
   types.GetTaskResultResponse:
     properties:
+      data: {}
       result:
-        $ref: '#/definitions/types.TaskResult'
+        type: string
     type: object
   types.GetTaskStatusResponse:
     properties:
@@ -44,13 +45,6 @@ definitions:
       password:
         type: string
       username:
-        type: string
-    type: object
-  types.TaskResult:
-    properties:
-      stderr:
-        type: string
-      stdout:
         type: string
     type: object
 host: localhost:8080

@@ -60,7 +60,15 @@ func (ts *tasksService) SendTask(task domain.Task) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	return ts.sender.Send(ctx, task)
+	err := ts.sender.Send(ctx, task)
+	if err == context.DeadlineExceeded {
+		task.Result = domain.TaskResultError
+		task.Stderr = "timeout"
+		ts.repo.UpdateTask(task)
+		return nil
+	}
+
+	return err
 }
 
 func (ts *tasksService) ListenTaskProcessor() error {
@@ -70,12 +78,14 @@ func (ts *tasksService) ListenTaskProcessor() error {
 		return err
 	}
 
+	// хз насколько рабочее решение в плане производительности, все таки один канал
 	for task := range tasks {
 		t, err := ts.repo.GetTask(task.UUID)
 		if err != nil {
 			return err
 		}
 		t.Status = "ready"
+		t.Result = task.Result
 		t.Stdout = task.Stdout
 		t.Stderr = task.Stderr
 		err = ts.repo.UpdateTask(t)

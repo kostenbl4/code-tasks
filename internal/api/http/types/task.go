@@ -19,20 +19,34 @@ type GetTaskStatusResponse struct {
 }
 
 // GetTaskResultResponse - структура для выходных данных на запрос результата задачи
+// пока что не знаю как учесть такую вложенность в swagger
 type GetTaskResultResponse struct {
-	Result TaskResult `json:"result"`
+	Result string `json:"result"`
+	Data   any    `json:"data"`
 }
 
-type TaskResult struct {
+type TaskResultOK struct {
 	Stdout string `json:"stdout"`
+}
+
+type TaskResponseError struct {
 	Stderr string `json:"stderr"`
 }
 
 func CreateGetTaskResultResponse(task domain.Task) GetTaskResultResponse {
-	return GetTaskResultResponse{
-		TaskResult{
-			task.Stdout,
-			task.Stderr,
-		},
+	if task.Result == domain.TaskResultOk {
+		return GetTaskResultResponse{
+			Result: "ok",
+			Data: TaskResultOK{
+				Stdout: task.Stdout,
+			},
+		}
+	} else {
+		return GetTaskResultResponse{
+			Result: task.Result,
+			Data: TaskResponseError{
+				Stderr: task.Stderr,
+			},
+		}
 	}
 }
