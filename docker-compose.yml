@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  task-service:
+    build: ./task-service
+    ports:
+      - 8080:8080
+    environment:
+      - RABBITMQ_URL=amqp://myuser:mypassword@rabbitmq:5672/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  code-processor:
+    build: ./code-processor
+    ports:
+      - 8081:8081
+    environment:
+      - RABBITMQ_URL=amqp://myuser:mypassword@rabbitmq:5672/
+    # volume используется для доступа к docker daemon
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    # все exchanges создаются в task service , но есть шанс что они не успеют создатся и будет ошибка, т.к code-processor использует их (временное решение)
+    restart: on-failure
+
+  rabbitmq:
+    image: rabbitmq:4.0-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: myuser
+      RABBITMQ_DEFAULT_PASS: mypassword
+      RABBITMQ_DEFAULT_VHOST: /
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 10s
+      retries: 3
+
