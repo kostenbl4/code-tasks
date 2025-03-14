@@ -4,6 +4,6 @@ WORKDIR /app
 
 COPY tests/* .
 
-RUN pip install -r req.txt
+RUN pip install -r requirements.txt
 
 CMD ["pytest", "tests_all.py" "-v"]
