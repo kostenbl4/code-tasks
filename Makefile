@@ -9,5 +9,5 @@ stop_services:
 build_services:
 	docker compose build
 
-start_with_test:
+start_with_tests:
 	docker compose --profile test up --abort-on-container-exit --exit-code-from app_test
