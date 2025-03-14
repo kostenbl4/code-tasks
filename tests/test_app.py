@@ -41,7 +41,7 @@ def test_login_user(user_data):
     assert response.status_code == 200
     data = response.json()
     assert 'token' in data
-    return data['token']
+
 
 def get_code_processor_payload():
     return {"translator": "python", "code": "print('Hello, stdout world!')"}
@@ -59,6 +59,7 @@ def test_create_task(auth_token):
 
     payload = dict()
     payload = get_code_processor_payload()
+    # payload = get_image_processor_payload()
 
 
     if len(payload) == 0:
@@ -72,15 +73,17 @@ def test_create_task(auth_token):
 
     return data['task_id']
 
+
 def test_task_status_and_result(auth_token):
     task_id = test_create_task(auth_token)
     status_url = f"{BASE_URL}/status/{task_id}"
     result_url = f"{BASE_URL}/result/{task_id}"
     headers = {'Authorization': f'Bearer {auth_token}'}
 
-    retry = 10
+    retry = 30
     while retry >= 0:
         response = requests.get(status_url, headers=headers)
+        print(response.json())
         assert response.status_code == 200
         data = response.json()
         assert 'status' in data
@@ -88,7 +91,7 @@ def test_task_status_and_result(auth_token):
         if data['status'] == 'ready':
             break
          
-        assert data['status'] == 'in_progress', f'undefined status: {data['status']}!'
+        assert data['status'] == 'in_progress', f'undefined status: {data["status"]}!'
         retry -= 1
         time.sleep(3)
     assert retry > 0, "task is still in progress!"

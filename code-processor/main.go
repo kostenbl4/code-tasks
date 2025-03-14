@@ -60,6 +60,7 @@ func main() {
 		client.FromEnv,
 		client.WithVersion("1.45"),
 	)
+
 	if err != nil {
 		log.Fatal(err)
 	}

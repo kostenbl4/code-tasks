@@ -43,9 +43,7 @@ services:
       retries: 3
 
   app_test:
-    build:
-      context: .
-      dockerfile: tests/Dockerfile
+    build: ./tests
     environment:
       BASE_URL: http://task-service:8080
     depends_on:
