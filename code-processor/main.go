@@ -58,7 +58,7 @@ func main() {
 
 	cli, err := client.NewClientWithOpts(
 		client.FromEnv,
-		client.WithVersion("1.47"),
+		client.WithVersion("1.45"),
 	)
 	if err != nil {
 		log.Fatal(err)
