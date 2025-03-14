@@ -22,8 +22,10 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      task-service:
+        condition: service_started
     # все exchanges создаются в task service , но есть шанс что они не успеют создатся и будет ошибка, т.к code-processor использует их (временное решение)
-    restart: on-failure
+    # restart: on-failure
 
   rabbitmq:
     image: rabbitmq:4.0-management
