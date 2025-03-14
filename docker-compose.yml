@@ -40,3 +40,15 @@ services:
       timeout: 10s
       retries: 3
 
+  app_test:
+    build:
+      context: .
+      dockerfile: tests/Dockerfile
+    environment:
+      BASE_URL: http://task-service:8080
+    depends_on:
+      task-service:
+        condition: service_started
+      code-processor:
+        condition: service_started
+    profiles: [ 'test' ]

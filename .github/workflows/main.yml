@@ -29,10 +29,7 @@ jobs:
       run: sudo apt-get install make
 
     - name: Run Tests
-      run: make test
-
-    - name: Start Services
-      run: make start_services
+      run: make start_with_tests
 
     - name: Shut Down Docker Compose
       if: always()
