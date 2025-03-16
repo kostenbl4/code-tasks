@@ -1,5 +1,22 @@
 basePath: /
 definitions:
+  types.CommitTaskRequest:
+    properties:
+      code:
+        type: string
+      result:
+        type: string
+      status:
+        type: string
+      stderr:
+        type: string
+      stdout:
+        type: string
+      task_id:
+        type: string
+      translator:
+        type: string
+    type: object
   types.CreateTaskRequest:
     properties:
       code:
@@ -51,9 +68,37 @@ host: localhost:8080
 info:
   contact: {}
   description: This is a sample server.
-  title: Task-server API
+  title: task-service API
   version: "1.0"
 paths:
+  /commit:
+    put:
+      consumes:
+      - application/json
+      description: Commits the result of a task using its unique ID.
+      parameters:
+      - description: Task result commit request payload
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/types.CommitTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Commit task result
+      tags:
+      - task
   /login:
     post:
       consumes:

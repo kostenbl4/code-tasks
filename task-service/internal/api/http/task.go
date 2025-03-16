@@ -112,7 +112,16 @@ func (th *TaskHandler) getTaskResultHandler(w http.ResponseWriter, r *http.Reque
 	utils.WriteJSON(w, types.CreateGetTaskResultResponse(task), http.StatusOK)
 }
 
-
+// @Summary Commit task result
+// @Description Commits the result of a task using its unique ID.
+// @Tags task
+// @Accept json
+// @Produce json
+// @Param task body types.CommitTaskRequest true "Task result commit request payload"
+// @Success 200
+// @Failure 400 {object} types.ErrorResponse "Invalid request payload"
+// @Failure 500 {object} types.ErrorResponse "Internal server error"
+// @Router /commit [put]
 func (th *TaskHandler) commitTaskResult(w http.ResponseWriter, r *http.Request) {
 	var in types.CommitTaskRequest
 	err := utils.ReadJSON(r, &in)
