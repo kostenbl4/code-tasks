@@ -1,4 +1,4 @@
-.PHONY: start_services stop_services build_services test
+.PHONY: start_services stop_services build_services start_with_tests
 
 start_services: build_services
 	docker compose up

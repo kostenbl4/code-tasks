@@ -3,6 +3,7 @@ package http
 import (
 	"net/http"
 	"task-service/internal/api/http/types"
+	"task-service/internal/domain"
 	"task-service/internal/middleware/auth"
 	"task-service/internal/usecases"
 	"task-service/utils"
@@ -111,6 +112,32 @@ func (th *TaskHandler) getTaskResultHandler(w http.ResponseWriter, r *http.Reque
 	utils.WriteJSON(w, types.CreateGetTaskResultResponse(task), http.StatusOK)
 }
 
+
+func (th *TaskHandler) commitTaskResult(w http.ResponseWriter, r *http.Request) {
+	var in types.CommitTaskRequest
+	err := utils.ReadJSON(r, &in)
+	if err != nil {
+		utils.WriteJSON(w, types.ErrorResponse{Error: "Bad request"}, http.StatusBadRequest)
+		return
+	}
+
+	task := domain.Task{
+		UUID:       in.UUID,
+		Status:     in.Status,
+		Result:     in.Result,
+		Translator: in.Translator,
+		Code:       in.Code,
+		Stdout:     in.Stdout,
+		Stderr:     in.Stderr,
+	}
+
+	if err := th.service.UpdateTask(task); err != nil {
+		types.HandleError(w, err)
+		return
+	}
+
+}
+
 // RegisterRoutes - регистрация ручек
 func (th *TaskHandler) RegisterRoutes(r chi.Router) {
 
@@ -121,4 +148,7 @@ func (th *TaskHandler) RegisterRoutes(r chi.Router) {
 		r.Get("/status/{task_id}", th.getTaskStatusHandler)
 		r.Get("/result/{task_id}", th.getTaskResultHandler)
 	})
+
+	// Для упрощения тестирования убрал аутентификацию с этого эндпоинта
+	r.Put("/commit", th.commitTaskResult)
 }

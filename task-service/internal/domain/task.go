@@ -11,7 +11,7 @@ var (
 type Task struct {
 	Translator string    `json:"translator"`
 	Code       string    `json:"code"`
-	UUID       uuid.UUID `json:"uuid"`
+	UUID       uuid.UUID `json:"task_id"`
 	Status     string    `json:"status"`
 	Result     string    `json:"result"`
 	Stdout     string    `json:"stdout"`

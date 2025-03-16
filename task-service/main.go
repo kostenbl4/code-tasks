@@ -103,4 +103,6 @@ func main() {
 	if err := srv.Run(r); err != nil {
 		log.Fatal("server down unexpectedly")
 	}
+
+	// TODO: graceful shutdown
 }

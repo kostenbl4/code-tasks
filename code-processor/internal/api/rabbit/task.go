@@ -4,6 +4,7 @@ import (
 	"code-processor/internal/domain"
 	"code-processor/internal/usecases"
 	"code-processor/pkg/broker"
+
 	"encoding/json"
 	"log"
 )
@@ -28,7 +29,8 @@ func NewRabbitHandler(consumeClient broker.RabbitClient, processor usecases.Proc
 	}
 
 	return &RabbitHandler{
-		client: consumeClient,
+		client:    consumeClient,
+		processor: processor,
 	}
 }
 
@@ -38,7 +40,8 @@ func (rh *RabbitHandler) ConsumeTasks() error {
 	if err != nil {
 		return err
 	}
-	var blocking chan struct{}
+	// канал для блокировки, временное решение
+	blocking := make(chan struct{})
 	go func() {
 		for msg := range messages {
 			log.Printf("new message: %v\n", msg.CorrelationId)
@@ -60,12 +63,11 @@ func (rh *RabbitHandler) ConsumeTasks() error {
 				log.Println("Ack message failed ")
 				continue
 			}
-			
+
 			log.Printf("Acked and responded back to the msg %v\n", msg.MessageId)
 		}
 	}()
 	log.Println("waiting for messages")
 	<-blocking
-
 	return nil
 }

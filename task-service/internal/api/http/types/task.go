@@ -33,6 +33,10 @@ type TaskResponseError struct {
 	Stderr string `json:"stderr"`
 }
 
+type CommitTaskRequest struct{
+	domain.Task
+}
+
 func CreateGetTaskResultResponse(task domain.Task) GetTaskResultResponse {
 	if task.Result == domain.TaskResultOk {
 		return GetTaskResultResponse{

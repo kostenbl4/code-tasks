@@ -9,6 +9,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+// RabbitSender - вариант отправки результата в rabbit
 type RabbitSender struct {
 	client broker.RabbitClient
 }
