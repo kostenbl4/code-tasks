@@ -9,8 +9,6 @@ import (
 	"task-service/pkg/broker"
 )
 
-var ReplyQueue = ""
-
 type rabbitmqConsumer struct {
 	client broker.RabbitClient
 }
@@ -22,9 +20,8 @@ func New(client broker.RabbitClient) repository.TaskConsumer {
 
 func (rc rabbitmqConsumer) Consume() (<-chan domain.Task, error) {
 
-	queue, err := rc.client.CreateQueue("", true, true)
-	ReplyQueue = queue.Name
-
+	queue, err := rc.client.CreateQueue("code.results", true, false)
+	
 	if err != nil {
 		return nil, err
 	}

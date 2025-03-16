@@ -1,6 +1,6 @@
-package types
+package domain
 
-type ProcessTask struct {
+type Task struct {
 	Translator string `json:"translator"`
 	Code       string `json:"code"`
 	UUID       string `json:"uuid"`
