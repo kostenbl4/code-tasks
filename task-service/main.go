@@ -2,7 +2,7 @@ package main
 
 import (
 	"code-tasks/pkg/broker"
-	pkgconfig "code-tasks/pkg/config"
+	//pkgconfig "code-tasks/pkg/config"
 	httpServer "code-tasks/pkg/http"
 	"code-tasks/task-service/internal/api/http"
 	"code-tasks/task-service/internal/config"
@@ -16,6 +16,7 @@ import (
 
 	_ "code-tasks/task-service/docs"
 
+	"github.com/ilyakaznacheev/cleanenv"
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	"github.com/go-chi/chi/v5"
@@ -34,10 +35,9 @@ import (
 // @BasePath /
 func main() {
 
-	cfg := config.Config{}
+	var cfg config.Config
 
-	err := pkgconfig.LoadConfig("config.yaml", &cfg)
-	if err != nil {
+	if err := cleanenv.ReadConfig("config.yaml", &cfg); err != nil {
 		log.Fatal(err)
 	}
 

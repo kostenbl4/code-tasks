@@ -6,7 +6,7 @@ import (
 	"code-tasks/code-processor/internal/usecases"
 	httpsender "code-tasks/code-processor/internal/usecases/http_sender"
 	"code-tasks/code-processor/internal/usecases/processor"
-	pkgconfig "code-tasks/pkg/config"
+	//pkgconfig "code-tasks/pkg/config"
 	"net/http"
 
 	//rabbitSender "code-processor/internal/usecases/rabbit_sender"
@@ -14,14 +14,15 @@ import (
 	"log"
 
 	"github.com/docker/docker/client"
+	"github.com/ilyakaznacheev/cleanenv"
 )
 
 func main() {
 
-	cfg := config.Config{}
+	var cfg config.Config
+	
 
-	err := pkgconfig.LoadConfig("config.yaml", &cfg)
-	if err != nil {
+	if err := cleanenv.ReadConfig("config.yaml", &cfg); err != nil {
 		log.Fatal(err)
 	}
 

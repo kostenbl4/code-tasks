@@ -1,7 +1,9 @@
 version: '3.8'
 services:
   task-service:
-    build: ./task-service
+    build: 
+      context: .
+      dockerfile: ./task-service/Dockerfile
     ports:
       - 8080:8080
     environment:
@@ -19,14 +21,16 @@ services:
         condition: service_healthy
 
   code-processor:
-    build: ./code-processor
+    build: 
+      context: .
+      dockerfile: ./code-processor/Dockerfile
     ports:
       - 8081:8081
     environment:
       - RABBIT_USER=myuser
       - RABBIT_PASSWORD=mypassword
       - RABBIT_HOST=rabbitmq:5672
-      - RABBIT_VHOST=/ 
+      - RABBIT_VHOST=/
     # volume используется для доступа к docker daemon
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
