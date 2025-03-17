@@ -79,6 +79,8 @@ func (ce codeExecutor) Execute(ctx context.Context, code, lang string) (string, 
 		return "", "", err
 	}
 
+	hostConfig := setLimits(container.HostConfig{})
+
 	// Создание тар-архива для копирования кода в контейнер
 	tarBuffer := new(bytes.Buffer)
 	tarWriter := tar.NewWriter(tarBuffer)
@@ -97,7 +99,7 @@ func (ce codeExecutor) Execute(ctx context.Context, code, lang string) (string, 
 	}
 
 	// Создание и запуск контейнера
-	containerResp, err := ce.client.ContainerCreate(ctx, containerConfig, nil, nil, nil, "")
+	containerResp, err := ce.client.ContainerCreate(ctx, containerConfig, &hostConfig, nil, nil, "")
 	if err != nil {
 		return "", "", fmt.Errorf("failed to create container: %v", err)
 	}
@@ -195,4 +197,13 @@ func getFilenameByLang(lang string) (string, error) {
 	default:
 		return "", fmt.Errorf("unsupported language: %s", lang)
 	}
+}
+
+func setLimits(hostConfig container.HostConfig) container.HostConfig {
+	hostConfig.Resources = container.Resources{
+		CPUPeriod: 1000000,
+		CPUQuota:  1000000,
+		Memory:    128 * 1024 * 1024,
+	}
+	return hostConfig
 }

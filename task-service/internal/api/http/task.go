@@ -2,11 +2,11 @@ package http
 
 import (
 	"net/http"
-	"task-service/internal/api/http/types"
-	"task-service/internal/domain"
-	"task-service/internal/middleware/auth"
-	"task-service/internal/usecases"
-	"task-service/utils"
+	"code-tasks/task-service/internal/api/http/types"
+	"code-tasks/task-service/internal/domain"
+	"code-tasks/task-service/internal/middleware/auth"
+	"code-tasks/task-service/internal/usecases"
+	"code-tasks/task-service/utils"
 
 	"github.com/go-chi/chi/v5"
 )

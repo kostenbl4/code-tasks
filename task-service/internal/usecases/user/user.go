@@ -1,10 +1,10 @@
 package user
 
 import (
-	"task-service/internal/domain"
-	"task-service/internal/repository"
-	"task-service/internal/usecases"
-	"task-service/utils"
+	"code-tasks/task-service/internal/domain"
+	"code-tasks/task-service/internal/repository"
+	"code-tasks/task-service/internal/usecases"
+	"code-tasks/task-service/utils"
 )
 
 // userService - сервис задач, конретная реализация интерфейса Task, может быть заменена на другую реализацию

@@ -1,9 +1,9 @@
 package rabbit
 
 import (
-	"code-processor/internal/domain"
-	"code-processor/internal/usecases"
-	"code-processor/pkg/broker"
+	"code-tasks/code-processor/internal/domain"
+	"code-tasks/code-processor/internal/usecases"
+	"code-tasks/pkg/broker"
 
 	"encoding/json"
 	"log"

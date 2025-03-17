@@ -1,7 +1,7 @@
 package usecases
 
 import (
-	"task-service/internal/domain"
+	"code-tasks/task-service/internal/domain"
 )
 
 // Session - интерфейс для сервиса сессий

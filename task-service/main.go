@@ -1,19 +1,20 @@
 package main
 
 import (
-	"flag"
+	"code-tasks/pkg/broker"
+	pkgconfig "code-tasks/pkg/config"
+	httpServer "code-tasks/pkg/http"
+	"code-tasks/task-service/internal/api/http"
+	"code-tasks/task-service/internal/config"
+	inmemstorage "code-tasks/task-service/internal/repository/in-mem-storage"
+	rabbitconsumer "code-tasks/task-service/internal/repository/rabbit_consumer"
+	rabbitsender "code-tasks/task-service/internal/repository/rabbit_sender"
+	"code-tasks/task-service/internal/usecases/session"
+	"code-tasks/task-service/internal/usecases/task"
+	"code-tasks/task-service/internal/usecases/user"
 	"log"
-	"task-service/internal/api/http"
-	inmemstorage "task-service/internal/repository/in-mem-storage"
-	rabbitconsumer "task-service/internal/repository/rabbit_consumer"
-	rabbitsender "task-service/internal/repository/rabbit_sender"
-	"task-service/internal/usecases/session"
-	"task-service/internal/usecases/task"
-	"task-service/internal/usecases/user"
-	"task-service/pkg/broker"
-	httpServer "task-service/pkg/http"
 
-	_ "task-service/docs"
+	_ "code-tasks/task-service/docs"
 
 	httpSwagger "github.com/swaggo/http-swagger"
 
@@ -33,11 +34,11 @@ import (
 // @BasePath /
 func main() {
 
-	addr := flag.String("addr", ":8080", "address for the http server")
+	cfg := config.Config{}
 
-	// Создаем конфигурацию для API сервера
-	config := httpServer.Config{
-		Addr: *addr,
+	err := pkgconfig.LoadConfig("config.yaml", &cfg)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// Создаем хранилище, менеджер, сессий
@@ -47,7 +48,7 @@ func main() {
 	// Создаем хранилище, сервис, обработчик задач
 	taskStore := inmemstorage.NewTaskStore()
 
-	sendConn, err := broker.ConnectRabbitMQ("myuser", "mypassword", "rabbitmq:5672", "")
+	sendConn, err := broker.ConnectRabbitMQ(cfg.Rabbit)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,7 +58,7 @@ func main() {
 	}
 	taskSender := rabbitsender.New(sendClient)
 
-	consumeConn, err := broker.ConnectRabbitMQ("myuser", "mypassword", "rabbitmq:5672", "")
+	consumeConn, err := broker.ConnectRabbitMQ(cfg.Rabbit)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -94,7 +95,7 @@ func main() {
 
 	// Создаем новый сервер с заданной конфигурацией и хранилищем
 	srv := httpServer.Server{
-		Config: config,
+		Config: cfg.HTTPServer,
 	}
 
 	// Логируем сообщение о запуске сервера

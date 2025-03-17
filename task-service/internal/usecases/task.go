@@ -1,7 +1,7 @@
 package usecases
 
 import (
-	"task-service/internal/domain"
+	"code-tasks/task-service/internal/domain"
 
 	"github.com/google/uuid"
 )

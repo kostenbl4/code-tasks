@@ -1,7 +1,7 @@
 package usecases
 
 import (
-	"code-processor/internal/domain"
+	"code-tasks/code-processor/internal/domain"
 	"context"
 
 )

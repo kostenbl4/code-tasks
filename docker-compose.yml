@@ -5,7 +5,15 @@ services:
     ports:
       - 8080:8080
     environment:
-      - RABBITMQ_URL=amqp://myuser:mypassword@rabbitmq:5672/
+      - RABBIT_USER=myuser
+      - RABBIT_PASSWORD=mypassword
+      - RABBIT_HOST=rabbitmq:5672
+      - RABBIT_VHOST=/
+
+      - SERVER_ADDRESS=:8080
+      - SERVER_READ_TIMEOUT=5s
+      - SERVER_WRITE_TIMEOUT=5s
+      - SERVER_IDLE_TIMEOUT=30s
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -15,7 +23,10 @@ services:
     ports:
       - 8081:8081
     environment:
-      - RABBITMQ_URL=amqp://myuser:mypassword@rabbitmq:5672/
+      - RABBIT_USER=myuser
+      - RABBIT_PASSWORD=mypassword
+      - RABBIT_HOST=rabbitmq:5672
+      - RABBIT_VHOST=/ 
     # volume используется для доступа к docker daemon
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

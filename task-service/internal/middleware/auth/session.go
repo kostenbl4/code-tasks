@@ -3,9 +3,9 @@ package auth
 import (
 	"net/http"
 	"strings"
-	"task-service/internal/api/http/types"
-	"task-service/internal/usecases"
-	"task-service/utils"
+	"code-tasks/task-service/internal/api/http/types"
+	"code-tasks/task-service/internal/usecases"
+	"code-tasks/task-service/utils"
 )
 
 var authPrefix = "Bearer "

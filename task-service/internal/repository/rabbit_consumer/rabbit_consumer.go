@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"log"
 
-	"task-service/internal/domain"
-	"task-service/internal/repository"
-	"task-service/pkg/broker"
+	"code-tasks/task-service/internal/domain"
+	"code-tasks/task-service/internal/repository"
+	"code-tasks/pkg/broker"
 )
 
 type rabbitmqConsumer struct {

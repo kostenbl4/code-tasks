@@ -1,10 +1,10 @@
 package session
 
 import (
-	"task-service/internal/domain"
-	"task-service/internal/repository"
-	"task-service/internal/usecases"
-	"task-service/utils"
+	"code-tasks/task-service/internal/domain"
+	"code-tasks/task-service/internal/repository"
+	"code-tasks/task-service/internal/usecases"
+	"code-tasks/task-service/utils"
 )
 
 const (

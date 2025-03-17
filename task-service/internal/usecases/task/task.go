@@ -1,10 +1,10 @@
 package task
 
 import (
+	"code-tasks/task-service/internal/domain"
+	"code-tasks/task-service/internal/repository"
+	"code-tasks/task-service/internal/usecases"
 	"context"
-	"task-service/internal/domain"
-	"task-service/internal/repository"
-	"task-service/internal/usecases"
 	"time"
 
 	"github.com/google/uuid"

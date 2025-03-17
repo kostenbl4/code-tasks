@@ -7,13 +7,20 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+type RabbitConfig struct {
+	User     string `env:"RABBIT_USER" yaml:"user" env-required:"true"`
+	Password string `env:"RABBIT_PASSWORD" yaml:"password" env-required:"true"`
+	Host     string `env:"RABBIT_HOST" yaml:"host" env-required:"true"`
+	Vhost    string `env:"RABBIT_VHOST" yaml:"vhost" env-required:"true"`
+}
+
 type RabbitClient struct {
 	conn *amqp.Connection
 	ch   *amqp.Channel
 }
 
-func ConnectRabbitMQ(username, password, host, vhost string) (*amqp.Connection, error) {
-	return amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s/%s", username, password, host, vhost))
+func ConnectRabbitMQ(cfg RabbitConfig) (*amqp.Connection, error) {
+	return amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s/%s", cfg.User, cfg.Password, cfg.Host, cfg.Vhost))
 }
 
 func NewRabbitClient(conn *amqp.Connection) (RabbitClient, error) {

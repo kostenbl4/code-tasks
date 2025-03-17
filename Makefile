@@ -11,3 +11,5 @@ build_services:
 
 start_with_tests:
 	docker compose --profile test up --abort-on-container-exit --exit-code-from app_test
+
+	

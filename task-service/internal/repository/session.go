@@ -1,6 +1,6 @@
 package repository
 
-import "task-service/internal/domain"
+import "code-tasks/task-service/internal/domain"
 
 type Session interface {
 	CreateSession(domain.Session) error

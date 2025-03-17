@@ -2,7 +2,7 @@ package types
 
 import (
 	"net/http"
-	"task-service/utils"
+	"code-tasks/task-service/utils"
 )
 
 type RegisterUserRequest struct {

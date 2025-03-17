@@ -1,6 +1,6 @@
 package types
 
-import "task-service/internal/domain"
+import "code-tasks/task-service/internal/domain"
 
 // CreateTaskRequest - структура для входных данных на создание задачи
 type CreateTaskRequest struct {

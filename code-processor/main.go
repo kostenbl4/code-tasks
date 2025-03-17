@@ -1,21 +1,31 @@
 package main
 
 import (
-	"code-processor/internal/api/rabbit"
-	"code-processor/internal/usecases"
-	httpsender "code-processor/internal/usecases/http_sender"
-	"code-processor/internal/usecases/processor"
+	"code-tasks/code-processor/internal/api/rabbit"
+	"code-tasks/code-processor/internal/config"
+	"code-tasks/code-processor/internal/usecases"
+	httpsender "code-tasks/code-processor/internal/usecases/http_sender"
+	"code-tasks/code-processor/internal/usecases/processor"
+	pkgconfig "code-tasks/pkg/config"
 	"net/http"
 
 	//rabbitSender "code-processor/internal/usecases/rabbit_sender"
-	"code-processor/pkg/broker"
+	"code-tasks/pkg/broker"
 	"log"
 
 	"github.com/docker/docker/client"
 )
 
 func main() {
-	consumeConn, err := broker.ConnectRabbitMQ("myuser", "mypassword", "rabbitmq:5672", "")
+
+	cfg := config.Config{}
+
+	err := pkgconfig.LoadConfig("config.yaml", &cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	consumeConn, err := broker.ConnectRabbitMQ(cfg.Rabbit)
 	if err != nil {
 		log.Fatal(err)
 	}

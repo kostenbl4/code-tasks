@@ -3,8 +3,8 @@ package inmemstorage
 import (
 	"sync"
 	"sync/atomic"
-	"task-service/internal/domain"
-	"task-service/internal/repository"
+	"code-tasks/task-service/internal/domain"
+	"code-tasks/task-service/internal/repository"
 )
 
 // userStore - хранилище пользователей в оперативной памяти

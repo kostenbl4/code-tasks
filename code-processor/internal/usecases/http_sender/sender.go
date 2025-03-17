@@ -2,7 +2,7 @@ package httpsender
 
 import (
 	"bytes"
-	"code-processor/internal/domain"
+	"code-tasks/code-processor/internal/domain"
 	"context"
 	"encoding/json"
 	"fmt"

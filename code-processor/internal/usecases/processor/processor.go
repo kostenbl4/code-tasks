@@ -1,8 +1,8 @@
 package processor
 
 import (
-	"code-processor/internal/domain"
-	"code-processor/internal/usecases"
+	"code-tasks/code-processor/internal/domain"
+	"code-tasks/code-processor/internal/usecases"
 	"context"
 	"time"
 )

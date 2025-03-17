@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"task-service/internal/domain"
+	"code-tasks/task-service/internal/domain"
 
 	"github.com/google/uuid"
 )

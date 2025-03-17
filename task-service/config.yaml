@@ -1,0 +1,11 @@
+http-server:
+  address: :8080
+  read_timeout: 5s
+  write_timeout: 5s
+  idle_timeout: 30s
+
+rabbitmq:
+  user: myuser
+  password: mypassword
+  host: rabbitmq:5672
+  vhost: /

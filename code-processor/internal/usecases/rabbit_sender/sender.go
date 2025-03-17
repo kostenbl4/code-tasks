@@ -1,8 +1,8 @@
 package rabbitsender
 
 import (
-	"code-processor/internal/domain"
-	"code-processor/pkg/broker"
+	"code-tasks/code-processor/internal/domain"
+	"code-tasks/pkg/broker"
 	"context"
 	"encoding/json"
 

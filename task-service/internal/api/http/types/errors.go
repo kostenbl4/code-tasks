@@ -3,8 +3,8 @@ package types
 import (
 	"errors"
 	"net/http"
-	"task-service/internal/domain"
-	"task-service/utils"
+	"code-tasks/task-service/internal/domain"
+	"code-tasks/task-service/utils"
 )
 
 // ErrorResponse - структура для выходных данных в случае ошибки

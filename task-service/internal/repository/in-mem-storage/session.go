@@ -2,8 +2,8 @@ package inmemstorage
 
 import (
 	"sync"
-	"task-service/internal/domain"
-	"task-service/internal/repository"
+	"code-tasks/task-service/internal/domain"
+	"code-tasks/task-service/internal/repository"
 )
 
 type sessionStore struct {

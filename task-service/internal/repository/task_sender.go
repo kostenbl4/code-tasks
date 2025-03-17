@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"task-service/internal/domain"
+	"code-tasks/task-service/internal/domain"
 )
 
 type TaskSender interface {
