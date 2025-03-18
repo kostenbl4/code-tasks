@@ -4,31 +4,33 @@ import (
 	"encoding/json"
 	"log"
 
+	"code-tasks/pkg/broker"
 	"code-tasks/task-service/internal/domain"
 	"code-tasks/task-service/internal/repository"
-	"code-tasks/pkg/broker"
 )
+
+var queueName = "code.results"
 
 type rabbitmqConsumer struct {
 	client broker.RabbitClient
 }
 
 func New(client broker.RabbitClient) repository.TaskConsumer {
-	client.CreateExchange("code_results", "direct", true, false)
+	//client.CreateExchange("code_results", "direct", true, false)
 	return rabbitmqConsumer{client: client}
 }
 
 func (rc rabbitmqConsumer) Consume() (<-chan domain.Task, error) {
 
-	queue, err := rc.client.CreateQueue("code.results", true, false)
-	
-	if err != nil {
-		return nil, err
-	}
+	// queue, err := rc.client.CreateQueue("code.results", true, false)
 
-	rc.client.CreateBinding(queue.Name, queue.Name, "code_results")
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	messages, err := rc.client.Consume(queue.Name, "resulting", false)
+	// rc.client.CreateBinding(queue.Name, queue.Name, "code_results")
+
+	messages, err := rc.client.Consume(queueName, "resulting", false)
 	if err != nil {
 		return nil, err
 	}

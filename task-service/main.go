@@ -71,7 +71,7 @@ func main() {
 	taskService := task.NewTaskService(taskStore, taskSender, taskConsumer)
 	taskHandler := http.NewTaskHandler(taskService, sessionManager)
 
-	go taskService.ListenTaskProcessor()
+	// go taskService.ListenTaskProcessor()
 
 	// Создаем хранилище, сервис, обработчик пользователей
 	userStore := inmemstorage.NewUserStore()

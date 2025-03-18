@@ -16,7 +16,7 @@ type rabbitmqSender struct {
 }
 
 func New(client broker.RabbitClient) repository.TaskSender {
-	client.CreateExchange("code_requests", "direct", true, false)
+	//client.CreateExchange("code_requests", "direct", true, false)
 	return rabbitmqSender{client: client}
 }
 

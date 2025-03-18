@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   task-service:
-    build: 
+    build:
       context: .
       dockerfile: ./task-service/Dockerfile
     ports:
@@ -19,9 +19,11 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      code-processor:
+        condition: service_started
 
   code-processor:
-    build: 
+    build:
       context: .
       dockerfile: ./code-processor/Dockerfile
     ports:
@@ -37,10 +39,6 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      task-service:
-        condition: service_started
-    # все exchanges создаются в task service , но есть шанс что они не успеют создатся и будет ошибка, т.к code-processor использует их (временное решение)
-    # restart: on-failure
 
   rabbitmq:
     image: rabbitmq:4.0-management
@@ -51,6 +49,10 @@ services:
       RABBITMQ_DEFAULT_USER: myuser
       RABBITMQ_DEFAULT_PASS: mypassword
       RABBITMQ_DEFAULT_VHOST: /
+    # volume используется для доступа к файлам конфигурации rabbit
+    volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./rabbitmq_definitions.json:/etc/rabbitmq/rabbitmq_definitions.json:ro
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       interval: 10s

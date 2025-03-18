@@ -18,15 +18,15 @@ type RabbitHandler struct {
 
 func NewRabbitHandler(consumeClient broker.RabbitClient, processor usecases.Processor) *RabbitHandler {
 
-	_, err := consumeClient.CreateQueue(queueName, true, false)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// _, err := consumeClient.CreateQueue(queueName, true, false)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	err = consumeClient.CreateBinding("code.process", "code.process", "code_requests")
-	if err != nil {
-		log.Fatal(err)
-	}
+	// err = consumeClient.CreateBinding("code.process", "code.process", "code_requests")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	return &RabbitHandler{
 		client:    consumeClient,
