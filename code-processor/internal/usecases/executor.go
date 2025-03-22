@@ -31,6 +31,11 @@ func NewCodeExecutor(client *client.Client) CodeExecutor {
 		client: client,
 	}
 }
+
+type codeExecutor struct {
+	client *client.Client
+}
+
 func loadImages(cli *client.Client) error {
 	ctx := context.Background()
 
@@ -63,10 +68,6 @@ func pullImage(imageName string, cli *client.Client, ctx *context.Context) error
 	return nil
 }
 
-type codeExecutor struct {
-	client *client.Client
-}
-
 func (ce codeExecutor) Execute(ctx context.Context, code, lang string) (string, string, error) {
 
 	filename, err := getFilenameByLang(lang)
@@ -82,23 +83,13 @@ func (ce codeExecutor) Execute(ctx context.Context, code, lang string) (string, 
 	hostConfig := setLimits(container.HostConfig{})
 
 	// Создание тар-архива для копирования кода в контейнер
-	tarBuffer := new(bytes.Buffer)
-	tarWriter := tar.NewWriter(tarBuffer)
-	tarHeader := &tar.Header{
-		Name: filename,
-		Size: int64(len(code)),
-	}
-	if err := tarWriter.WriteHeader(tarHeader); err != nil {
-		return "", "", err
-	}
-	if _, err := tarWriter.Write([]byte(code)); err != nil {
-		return "", "", err
-	}
-	if err := tarWriter.Close(); err != nil {
+
+	tarBuffer, err := wrapToTAR(code, filename)
+	if err != nil {
 		return "", "", err
 	}
 
-	// Создание и запуск контейнера
+	// Создание контейнера
 	containerResp, err := ce.client.ContainerCreate(ctx, containerConfig, &hostConfig, nil, nil, "")
 	if err != nil {
 		return "", "", fmt.Errorf("failed to create container: %v", err)
@@ -206,4 +197,24 @@ func setLimits(hostConfig container.HostConfig) container.HostConfig {
 		Memory:    128 * 1024 * 1024,
 	}
 	return hostConfig
+}
+
+func wrapToTAR(data string, filename string) (*bytes.Buffer, error) {
+	tarBuffer := new(bytes.Buffer)
+	tarWriter := tar.NewWriter(tarBuffer)
+	tarHeader := &tar.Header{
+		Name: filename,
+		Size: int64(len(data)),
+	}
+	if err := tarWriter.WriteHeader(tarHeader); err != nil {
+		return nil, err
+	}
+	if _, err := tarWriter.Write([]byte(data)); err != nil {
+		return nil, err
+	}
+	if err := tarWriter.Close(); err != nil {
+		return nil, err
+	}
+
+	return tarBuffer, nil
 }

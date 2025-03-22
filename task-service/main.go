@@ -105,5 +105,5 @@ func main() {
 		log.Fatal("server down unexpectedly")
 	}
 
-	// TODO: graceful shutdown
+	// TODO: graceful shutdown, soon)
 }

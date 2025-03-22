@@ -72,5 +72,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// TODO: graceful shutdown
+	// TODO: graceful shutdown, soon)
 }

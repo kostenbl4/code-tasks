@@ -10,40 +10,41 @@ import (
 type processor struct {
 	sender       usecases.Sender
 	codeExecutor usecases.CodeExecutor
+
+	executeTimeout time.Duration
 }
 
 func NewProcessor(sender usecases.Sender, codeExecutor usecases.CodeExecutor) usecases.Processor {
+
+	executeTimeout := 20 * time.Second
 	return processor{
 		sender:       sender,
 		codeExecutor: codeExecutor,
+
+		executeTimeout: executeTimeout,
 	}
 }
 
 func (p processor) Process(task domain.Task) error {
 
 	// Задаем таймаут на выполнение кода
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), p.executeTimeout)
 	defer cancel()
 	stdOut, stdErr, err := p.codeExecutor.Execute(ctx, task.Code, task.Translator)
-	resTask := domain.Task{
-		Translator: task.Translator,
-		Code:       task.Code,
-		UUID:       task.UUID,
-		Status:     "ready",
-	}
+	task.Status = "ready"
 	if err != nil {
-		resTask.Result = "error"
-		resTask.Stderr = err.Error()
+		task.Result = "error"
+		task.Stderr = err.Error()
 	}
 	if stdErr != "" {
-		resTask.Result = "error"
+		task.Result = "error"
 	} else {
-		resTask.Result = "ok"
+		task.Result = "ok"
 	}
-	resTask.Stdout = stdOut
-	resTask.Stderr = stdErr
+	task.Stdout = stdOut
+	task.Stderr = stdErr
 
-	if err := p.sender.SendResult(ctx, resTask); err != nil {
+	if err := p.sender.SendResult(ctx, task); err != nil {
 		return err
 	}
 
