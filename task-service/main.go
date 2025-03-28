@@ -2,11 +2,13 @@ package main
 
 import (
 	"code-tasks/pkg/broker"
+	"code-tasks/pkg/postgres"
 	//pkgconfig "code-tasks/pkg/config"
 	httpServer "code-tasks/pkg/http"
 	"code-tasks/task-service/internal/api/http"
 	"code-tasks/task-service/internal/config"
 	inmemstorage "code-tasks/task-service/internal/repository/in-mem-storage"
+	postgresstorage "code-tasks/task-service/internal/repository/postgres_storage"
 	rabbitconsumer "code-tasks/task-service/internal/repository/rabbit_consumer"
 	rabbitsender "code-tasks/task-service/internal/repository/rabbit_sender"
 	"code-tasks/task-service/internal/usecases/session"
@@ -45,8 +47,15 @@ func main() {
 	sessionStore := inmemstorage.NewSessionStore()
 	sessionManager := session.NewSeessionManager(sessionStore, 3600)
 
+	// Создаем хранилище postgres
+	PGpool, err := postgres.NewPostgresPool(cfg.Postgres)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer PGpool.Close()
+
 	// Создаем хранилище, сервис, обработчик задач
-	taskStore := inmemstorage.NewTaskStore()
+	taskStore := postgresstorage.NewTaskStore(PGpool)
 
 	sendConn, err := broker.ConnectRabbitMQ(cfg.Rabbit)
 	if err != nil {
@@ -74,7 +83,7 @@ func main() {
 	// go taskService.ListenTaskProcessor()
 
 	// Создаем хранилище, сервис, обработчик пользователей
-	userStore := inmemstorage.NewUserStore()
+	userStore := postgresstorage.NewUserStore(PGpool)
 	userService := user.NewUserService(userStore)
 	userHandler := http.NewUserHandler(userService, sessionManager)
 

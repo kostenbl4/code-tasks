@@ -1,9 +1,10 @@
 package inmemstorage
 
 import (
-	"sync"
 	"code-tasks/task-service/internal/domain"
 	"code-tasks/task-service/internal/repository"
+	"context"
+	"sync"
 
 	"github.com/google/uuid"
 )
@@ -20,12 +21,13 @@ func NewTaskStore() repository.Task {
 }
 
 // Добавляет новую задачу в хранилище
-func (ts *tasksStore) CreateTask(task domain.Task) {
-	ts.tasks.Store(task.UUID, task)
+func (ts *tasksStore) CreateTask(ctx context.Context, task domain.Task) error {
+	ts.tasks.Store(task.ID, task)
+	return nil
 }
 
 // Возвращает задачу по её UUID, если она существует
-func (ts *tasksStore) GetTask(uuid uuid.UUID) (domain.Task, error) {
+func (ts *tasksStore) GetTask(ctx context.Context, uuid uuid.UUID) (domain.Task, error) {
 	if t, ok := ts.tasks.Load(uuid); ok {
 		return t.(domain.Task), nil
 	}
@@ -33,9 +35,9 @@ func (ts *tasksStore) GetTask(uuid uuid.UUID) (domain.Task, error) {
 }
 
 // Обновляет существующую задачу в хранилище
-func (ts *tasksStore) UpdateTask(task domain.Task) error {
-	if _, ok := ts.tasks.Load(task.UUID); ok {
-		ts.tasks.Store(task.UUID, task)
+func (ts *tasksStore) UpdateTask(ctx context.Context, task domain.Task) error {
+	if _, ok := ts.tasks.Load(task.ID); ok {
+		ts.tasks.Store(task.ID, task)
 		return nil
 	}
 	return domain.ErrTaskNotFound

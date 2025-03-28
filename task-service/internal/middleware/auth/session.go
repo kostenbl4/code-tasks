@@ -1,12 +1,15 @@
 package auth
 
 import (
-	"net/http"
-	"strings"
 	"code-tasks/task-service/internal/api/http/types"
 	"code-tasks/task-service/internal/usecases"
 	"code-tasks/task-service/utils"
+	"context"
+	"net/http"
+	"strings"
 )
+
+var UserIDKey utils.ContextKey = "user_id"
 
 var authPrefix = "Bearer "
 
@@ -26,11 +29,15 @@ func SessionMiddleware(smanager usecases.Session) func(http.Handler) http.Handle
 
 			token := strings.TrimPrefix(authHeader, authPrefix)
 
-			_, err := smanager.GetSessionByID(token)
+			s, err := smanager.GetSessionByID(token)
 			if err != nil {
 				utils.WriteJSON(w, types.ErrorResponse{Error: "Invalid token"}, http.StatusUnauthorized)
 				return
 			}
+			
+			// Добавляем в контекст идентификатор пользователя
+			ctx := context.WithValue(r.Context(), UserIDKey, int(s.UserID))
+			r = r.WithContext(ctx)
 
 			next.ServeHTTP(w, r)
 		})

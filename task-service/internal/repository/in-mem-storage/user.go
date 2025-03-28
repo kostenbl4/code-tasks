@@ -1,10 +1,11 @@
 package inmemstorage
 
 import (
-	"sync"
-	"sync/atomic"
 	"code-tasks/task-service/internal/domain"
 	"code-tasks/task-service/internal/repository"
+	"context"
+	"sync"
+	"sync/atomic"
 )
 
 // userStore - хранилище пользователей в оперативной памяти
@@ -20,14 +21,14 @@ func NewUserStore() repository.User {
 }
 
 // Создает новую задачу и добавляет её в хранилище
-func (us *userStore) CreateUser(user domain.User) error {
+func (us *userStore) CreateUser(ctx context.Context, user domain.User) (int64, error) {
 	user.ID = us.userCount.Load()
-	us.users.Store(user.Login, user)
+	us.users.Store(user.Username, user)
 	us.userCount.Add(1)
-	return nil
+	return user.ID, nil
 }
 
-func (us *userStore) GetUserByUsername(username string) (domain.User, error) {
+func (us *userStore) GetByUsername(ctx context.Context, username string) (domain.User, error) {
 	if u, ok := us.users.Load(username); ok {
 		user, ok := u.(domain.User)
 		if !ok {

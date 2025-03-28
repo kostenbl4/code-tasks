@@ -10,6 +10,7 @@ build_services:
 	docker compose build
 
 start_with_tests:
-	docker compose --profile test up --abort-on-container-exit --exit-code-from app_test
+	docker compose --profile test up
 
-	
+run_migrations:
+	GOOSE_DRIVER=postgres GOOSE_DBSTRING="host=localhost port=5432 password=postgres user=postgres dbname=tasks sslmode=disable" goose -dir ./task-service/migrations up

@@ -1,8 +1,8 @@
 package types
 
 import (
-	"net/http"
 	"code-tasks/task-service/utils"
+	"net/http"
 )
 
 type RegisterUserRequest struct {
@@ -17,8 +17,8 @@ func GetRegisterUserRequest(r *http.Request) (RegisterUserRequest, error) {
 	if err != nil {
 		return RegisterUserRequest{}, err
 	}
-	
-	// валидация 
+
+	// валидация
 
 	return in, nil
 }

@@ -15,19 +15,31 @@ type tasksService struct {
 	repo     repository.Task
 	sender   repository.TaskSender
 	consumer repository.TaskConsumer
+
+	defaultTaskTimeout time.Duration
+	sendTaskTimeout    time.Duration
 }
 
 // Создает новый сервис задач
 func NewTaskService(repo repository.Task, sender repository.TaskSender, consumer repository.TaskConsumer) usecases.Task {
-	return &tasksService{repo: repo, sender: sender, consumer: consumer}
+	defaultTaskTimeout := 5 * time.Second
+	sendTaskTimeout := 5 * time.Second
+	return &tasksService{
+		repo:               repo,
+		sender:             sender,
+		consumer:           consumer,
+		defaultTaskTimeout: defaultTaskTimeout,
+		sendTaskTimeout:    sendTaskTimeout,
+	}
 }
 
 // Создает новую задачу и добавляет её в хранилище
-func (ts *tasksService) CreateTask(translator, code string) (domain.Task, error) {
+func (ts *tasksService) CreateTask(translator, code string, userID int64) (domain.Task, error) {
 	id := uuid.New()
 	// проверка на то, что нового uuid нет среди существующих
 	for {
-		if _, err := ts.repo.GetTask(id); err == domain.ErrTaskNotFound {
+		ctx, _ := context.WithTimeout(context.Background(), ts.defaultTaskTimeout)
+		if _, err := ts.repo.GetTask(ctx, id); err == domain.ErrTaskNotFound {
 			break
 		}
 		id = uuid.New()
@@ -36,35 +48,42 @@ func (ts *tasksService) CreateTask(translator, code string) (domain.Task, error)
 	task := domain.Task{
 		Translator: translator,
 		Code:       code,
-		UUID:       id,
+		ID:         id,
+		UserID:     userID,
 		Status:     "in_progress",
 	}
 
-	ts.repo.CreateTask(task)
+	ctx, cancel := context.WithTimeout(context.Background(), ts.defaultTaskTimeout)
+	defer cancel()
+	ts.repo.CreateTask(ctx, task)
 
 	return task, nil
 }
 
 // Возвращает задачу по её UUID, если она существует
 func (ts *tasksService) GetTask(uuid uuid.UUID) (domain.Task, error) {
-	return ts.repo.GetTask(uuid)
+	ctx, cancel := context.WithTimeout(context.Background(), ts.defaultTaskTimeout)
+	defer cancel()
+	return ts.repo.GetTask(ctx, uuid)
 }
 
 // Обновляет существующую задачу в хранилище
 func (ts *tasksService) UpdateTask(task domain.Task) error {
-	return ts.repo.UpdateTask(task)
+	ctx, cancel := context.WithTimeout(context.Background(), ts.defaultTaskTimeout)
+	defer cancel()
+	return ts.repo.UpdateTask(ctx, task)
 }
 
 func (ts *tasksService) SendTask(task domain.Task) error {
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), ts.sendTaskTimeout)
 	defer cancel()
 
 	err := ts.sender.Send(ctx, task)
 	if err == context.DeadlineExceeded {
 		task.Result = domain.TaskResultError
 		task.Stderr = "timeout"
-		ts.repo.UpdateTask(task)
+		ts.repo.UpdateTask(ctx, task)
 		return nil
 	}
 
@@ -80,7 +99,11 @@ func (ts *tasksService) ListenTaskProcessor() error {
 
 	// хз насколько рабочее решение в плане производительности, все таки один канал
 	for task := range tasks {
-		t, err := ts.repo.GetTask(task.UUID)
+
+		ctx, cancel := context.WithTimeout(context.Background(), ts.defaultTaskTimeout)
+		defer cancel()
+
+		t, err := ts.repo.GetTask(ctx, task.ID)
 		if err != nil {
 			return err
 		}
@@ -88,7 +111,7 @@ func (ts *tasksService) ListenTaskProcessor() error {
 		t.Result = task.Result
 		t.Stdout = task.Stdout
 		t.Stderr = task.Stderr
-		err = ts.repo.UpdateTask(t)
+		err = ts.repo.UpdateTask(ctx, t)
 		if err != nil {
 			return err
 		}

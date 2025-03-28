@@ -21,6 +21,10 @@ services:
         condition: service_healthy
       code-processor:
         condition: service_started
+      db:
+        condition: service_healthy
+      task-service-migrations:
+        condition: service_completed_successfully
 
   code-processor:
     build:
@@ -38,6 +42,38 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       rabbitmq:
+        condition: service_healthy
+
+  db:
+    image: postgres:15-alpine
+    container_name: db
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tasks
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U postgres -d tasks'" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  # Вариант запуска миграций в своем контейнере
+  task-service-migrations:
+    build:
+      context: .
+      dockerfile: ./task-service/migrations/Dockerfile
+    environment:
+      - DBHOST=db
+      - DBPORT=5432
+      - DBUSER=postgres
+      - DBPASSWORD=postgres
+      - DBNAME=tasks
+      - DBSSL=disable
+    depends_on:
+      db:
         condition: service_healthy
 
   rabbitmq:
@@ -61,6 +97,7 @@ services:
 
   app_test:
     build: ./tests
+    container_name: app_test
     environment:
       BASE_URL: http://task-service:8080
     depends_on:

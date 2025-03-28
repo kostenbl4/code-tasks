@@ -1,12 +1,13 @@
 package http
 
 import (
-	"net/http"
 	"code-tasks/task-service/internal/api/http/types"
 	"code-tasks/task-service/internal/domain"
 	"code-tasks/task-service/internal/middleware/auth"
 	"code-tasks/task-service/internal/usecases"
 	"code-tasks/task-service/utils"
+	"log"
+	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -41,19 +42,28 @@ func (th *TaskHandler) createTaskHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	task, err := th.service.CreateTask(in.Translator, in.Code)
+	userID, err := utils.GetContextInt(r, auth.UserIDKey)
+	
 	if err != nil {
+		log.Println(err)
+		utils.WriteJSON(w, types.ErrorResponse{Error: "Bad request"}, http.StatusBadRequest)
+		return
+	}
+	task, err := th.service.CreateTask(in.Translator, in.Code, int64(userID))
+	if err != nil {
+		log.Println(err)
 		types.HandleError(w, err)
 		return
 	}
 
 	err = th.service.SendTask(task)
 	if err != nil {
+		log.Println(err)
 		types.HandleError(w, err)
 		return
 	}
 
-	utils.WriteJSON(w, types.CreateTaskResponse{UUID: task.UUID.String()}, http.StatusCreated)
+	utils.WriteJSON(w, types.CreateTaskResponse{UUID: task.ID.String()}, http.StatusCreated)
 }
 
 // @Summary Retrieve task status
@@ -131,7 +141,7 @@ func (th *TaskHandler) commitTaskResult(w http.ResponseWriter, r *http.Request) 
 	}
 
 	task := domain.Task{
-		UUID:       in.UUID,
+		ID:         in.ID,
 		Status:     in.Status,
 		Result:     in.Result,
 		Translator: in.Translator,

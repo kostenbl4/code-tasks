@@ -8,6 +8,8 @@ import (
 	"github.com/google/uuid"
 )
 
+type ContextKey string
+
 func ParseUUID(r *http.Request, param string) (uuid.UUID, error) {
 	u := chi.URLParam(r, param)
 
@@ -20,4 +22,12 @@ func ParseUUID(r *http.Request, param string) (uuid.UUID, error) {
 		return uuid.UUID{}, fmt.Errorf("invalid id: %v", err)
 	}
 	return id, nil
+}
+
+func GetContextInt(r *http.Request, key ContextKey) (int, error) {
+	if id, ok := r.Context().Value(key).(int); ok {
+		return id, nil
+	}
+
+	return -1, fmt.Errorf("invalid id")
 }

@@ -1,9 +1,10 @@
 package inmemstorage
 
 import (
-	"sync"
 	"code-tasks/task-service/internal/domain"
 	"code-tasks/task-service/internal/repository"
+	"context"
+	"sync"
 )
 
 type sessionStore struct {
@@ -14,12 +15,12 @@ func NewSessionStore() repository.Session {
 	return &sessionStore{}
 }
 
-func (ss *sessionStore) CreateSession(session domain.Session) error {
+func (ss *sessionStore) CreateSession(ctx context.Context, session domain.Session) error {
 	ss.sessions.Store(session.SessionID, session)
 	return nil
 }
 
-func (ss *sessionStore) GetSession(id string) (domain.Session, error) {
+func (ss *sessionStore) GetSession(ctx context.Context, id string) (domain.Session, error) {
 	value, ok := ss.sessions.Load(id)
 	if !ok {
 		return domain.Session{}, domain.ErrSessionNotFound
@@ -31,7 +32,7 @@ func (ss *sessionStore) GetSession(id string) (domain.Session, error) {
 	return session, nil
 }
 
-func (ss *sessionStore) GetSessionByUserId(userID int64) (domain.Session, bool) {
+func (ss *sessionStore) GetSessionByUserId(ctx context.Context, userID int64) (domain.Session, bool) {
 	var s domain.Session
 	found := false
 	ss.sessions.Range(func(key, value interface{}) bool {
@@ -48,7 +49,7 @@ func (ss *sessionStore) GetSessionByUserId(userID int64) (domain.Session, bool) 
 	return s, found
 }
 
-func (ss *sessionStore) DeleteSession(id string) error {
+func (ss *sessionStore) DeleteSession(ctx context.Context, id string) error {
 	ss.sessions.Delete(id)
 	return nil
 }

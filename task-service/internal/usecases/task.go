@@ -9,7 +9,7 @@ import (
 // Task - интерфейс для сервиса задач
 type Task interface {
 	// Создает новую задачу и возвращает её UUID
-	CreateTask(string, string) (domain.Task, error)
+	CreateTask(string, string, int64) (domain.Task, error)
 	// Возвращает задачу по её UUID
 	GetTask(uuid.UUID) (domain.Task, error)
 	// Обновляет существующую задачу

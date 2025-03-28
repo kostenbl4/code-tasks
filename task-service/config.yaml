@@ -1,4 +1,4 @@
-http-server:
+http_server:
   address: :8080
   read_timeout: 5s
   write_timeout: 5s
@@ -9,3 +9,10 @@ rabbitmq:
   password: mypassword
   host: rabbitmq:5672
   vhost: /
+
+postgres:
+  host: db
+  port: 5432
+  user: postgres
+  password: postgres
+  db_name: tasks

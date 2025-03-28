@@ -1,10 +1,10 @@
 package http
 
 import (
-	"net/http"
 	"code-tasks/task-service/internal/api/http/types"
 	"code-tasks/task-service/internal/usecases"
 	"code-tasks/task-service/utils"
+	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -63,12 +63,14 @@ func (usrh *UserHandler) loginUserHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	id, err := usrh.service.LoginUser(in.Username, in.Password)
+	
 	if err != nil {
 		types.HandleError(w, err)
 		return
 	}
 
 	token, err := usrh.smanager.CreateSession(id)
+	
 	if err != nil {
 		types.HandleError(w, err)
 		return
