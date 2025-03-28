@@ -28,9 +28,15 @@ jobs:
     - name: Install Make
       run: sudo apt-get install make
 
-    - name: Build and Run Tests
-      run: make start_with_tests
+    - name: Build
+      run: make build
+
+    - name: Launch
+      run: make run
+
+    - name: Tests
+      run: make run_tests
 
     - name: Shut Down Docker Compose
       if: always()
-      run: make stop_services
+      run: make stop
