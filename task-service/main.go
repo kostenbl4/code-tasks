@@ -2,15 +2,17 @@ package main
 
 import (
 	"code-tasks/pkg/broker"
-	"code-tasks/pkg/postgres"
-	//pkgconfig "code-tasks/pkg/config"
 	httpServer "code-tasks/pkg/http"
+	"code-tasks/pkg/postgres"
 	"code-tasks/task-service/internal/api/http"
 	"code-tasks/task-service/internal/config"
-	inmemstorage "code-tasks/task-service/internal/repository/in-mem-storage"
+
+	//inmemstorage "code-tasks/task-service/internal/repository/in-mem-storage"
+	rediscache "code-tasks/pkg/cache/redis"
 	postgresstorage "code-tasks/task-service/internal/repository/postgres_storage"
 	rabbitconsumer "code-tasks/task-service/internal/repository/rabbit_consumer"
 	rabbitsender "code-tasks/task-service/internal/repository/rabbit_sender"
+	redisstorage "code-tasks/task-service/internal/repository/redis_storage"
 	"code-tasks/task-service/internal/usecases/session"
 	"code-tasks/task-service/internal/usecases/task"
 	"code-tasks/task-service/internal/usecases/user"
@@ -43,8 +45,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Создаем хранилище, менеджер, сессий
-	sessionStore := inmemstorage.NewSessionStore()
+	// Создаем хранилище в операционной памяти
+	// sessionStore := inmemstorage.NewSessionStore()
+
+	redis, err := rediscache.NewRedis(cfg.Redis)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Создаем хранилище redis
+	sessionStore := redisstorage.NewSessionStore(redis, cfg.Redis.TTL)
+
+	// Cоздаем менеджер сессий
 	sessionManager := session.NewSeessionManager(sessionStore, 3600)
 
 	// Создаем хранилище postgres

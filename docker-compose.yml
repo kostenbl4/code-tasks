@@ -25,6 +25,8 @@ services:
         condition: service_healthy
       task-service-migrations:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
 
   code-processor:
     build:
@@ -75,6 +77,20 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  redis:
+    image: redis:7.4.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    environment:
+      REDIS_PASSWORD: redis
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'redis-cli ping'"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    
 
   rabbitmq:
     image: rabbitmq:4.0-management

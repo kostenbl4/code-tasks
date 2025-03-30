@@ -16,3 +16,11 @@ postgres:
   user: postgres
   password: postgres
   db_name: tasks
+
+redis:
+  host: redis
+  port: 6379
+  password: redis
+  TTL: 30m
+  write_timeout: 3s
+  read_timeout: 2s

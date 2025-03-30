@@ -25,5 +25,9 @@ func NewPostgresPool(cfg PostgresConfig) (*pgxpool.Pool, error) {
 		return nil, fmt.Errorf("failed to create pool: %w", err)
 	}
 
+	if err := pool.Ping(context.Background()); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+
 	return pool, nil
 }
