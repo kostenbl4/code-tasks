@@ -6,6 +6,7 @@ import (
 	"code-tasks/pkg/postgres"
 	"code-tasks/task-service/internal/api/http"
 	"code-tasks/task-service/internal/config"
+	"code-tasks/task-service/internal/middleware/metrics"
 
 	//inmemstorage "code-tasks/task-service/internal/repository/in-mem-storage"
 	rediscache "code-tasks/pkg/cache/redis"
@@ -20,11 +21,15 @@ import (
 
 	_ "code-tasks/task-service/docs"
 
-	"github.com/ilyakaznacheev/cleanenv"
-	httpSwagger "github.com/swaggo/http-swagger"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/ilyakaznacheev/cleanenv"
+
+	//"github.com/prometheus/client_golang/examples/middleware/httpmiddleware"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 // @title task-service API
@@ -106,6 +111,19 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
+	
+
+	// Создаем отдельный Registry для метрик
+	registry := prometheus.NewRegistry()
+	
+	// Добавляем go runtime metrics и process collectors.
+	registry.MustRegister(
+		collectors.NewGoCollector(),
+		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+	)
+	r.Use(metrics.New(registry, nil, "task_service").Handler())
+
+	r.Mount("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
 
 	// Добавляем swagger
 	r.Mount("/swagger", httpSwagger.WrapHandler)

@@ -86,11 +86,10 @@ services:
     environment:
       REDIS_PASSWORD: redis
     healthcheck:
-      test: ["CMD-SHELL", "sh -c 'redis-cli ping'"]
+      test: [ "CMD-SHELL", "sh -c 'redis-cli ping'" ]
       interval: 10s
       timeout: 5s
       retries: 3
-    
 
   rabbitmq:
     image: rabbitmq:4.0-management
@@ -111,6 +110,26 @@ services:
       timeout: 10s
       retries: 3
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+    ports:
+      - 9090:9090
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana:rw
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+
   app_test:
     build: ./tests
     container_name: app_test
@@ -122,3 +141,7 @@ services:
       code-processor:
         condition: service_started
     profiles: [ 'test' ]
+
+volumes:
+  grafana-data:
+    driver: local
