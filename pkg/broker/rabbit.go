@@ -64,7 +64,7 @@ func (rc RabbitClient) Send(ctx context.Context, exchange, routingKey string, da
 		data,
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to send message: %w", err)
 	}
 	confirmation.Wait()
 	return nil

@@ -60,7 +60,7 @@ func (ts *taskStore) GetTask(ctx context.Context, uuid uuid.UUID) (domain.Task, 
 }
 
 func (ts *taskStore) UpdateTask(ctx context.Context, task domain.Task) error {
-	tag, err := ts.pool.Exec(ctx, `UPDATE tasks SET task_status = $1, result = $2, stdout = $3, stderr = $4 WHERE id = $5`,
+	_, err := ts.pool.Exec(ctx, `UPDATE tasks SET task_status = $1, result = $2, stdout = $3, stderr = $4 WHERE id = $5`,
 		task.Status,
 		task.Result,
 		task.Stdout,
@@ -68,10 +68,10 @@ func (ts *taskStore) UpdateTask(ctx context.Context, task domain.Task) error {
 		task.ID,
 	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.ErrTaskNotFound
+		}
 		return fmt.Errorf("failed to update task: %w", err)
-	}
-	if tag.RowsAffected() == 0 {
-		return domain.ErrTaskNotFound
 	}
 	return nil
 

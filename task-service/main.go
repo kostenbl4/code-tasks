@@ -2,16 +2,23 @@ package main
 
 import (
 	"code-tasks/pkg/broker"
-	httpServer "code-tasks/pkg/http"
+	httpLogger "code-tasks/pkg/http/middleware"
+	httpServer "code-tasks/pkg/http/server"
+	pkgLogger "code-tasks/pkg/log"
 	"code-tasks/pkg/postgres"
 	"code-tasks/task-service/internal/api/http"
 	"code-tasks/task-service/internal/config"
 	"code-tasks/task-service/internal/middleware/metrics"
+	"context"
+	"os"
+	"os/signal"
+	"syscall"
 
 	//inmemstorage "code-tasks/task-service/internal/repository/in-mem-storage"
 	rediscache "code-tasks/pkg/cache/redis"
 	postgresstorage "code-tasks/task-service/internal/repository/postgres_storage"
-	rabbitconsumer "code-tasks/task-service/internal/repository/rabbit_consumer"
+
+	//rabbitconsumer "code-tasks/task-service/internal/repository/rabbit_consumer"
 	rabbitsender "code-tasks/task-service/internal/repository/rabbit_sender"
 	redisstorage "code-tasks/task-service/internal/repository/redis_storage"
 	"code-tasks/task-service/internal/usecases/session"
@@ -25,7 +32,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/ilyakaznacheev/cleanenv"
 
-	//"github.com/prometheus/client_golang/examples/middleware/httpmiddleware"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -50,6 +56,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	logger, file := pkgLogger.NewLogger(cfg.Logger)
+	defer file.Close()
+
 	// Создаем хранилище в операционной памяти
 	// sessionStore := inmemstorage.NewSessionStore()
 
@@ -58,65 +67,57 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Создаем хранилище redis
 	sessionStore := redisstorage.NewSessionStore(redis, cfg.Redis.TTL)
+	sessionManager := session.NewSeessionManager(sessionStore)
 
-	// Cоздаем менеджер сессий
-	sessionManager := session.NewSeessionManager(sessionStore, 3600)
-
-	// Создаем хранилище postgres
 	PGpool, err := postgres.NewPostgresPool(cfg.Postgres)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer PGpool.Close()
 
-	// Создаем хранилище, сервис, обработчик задач
 	taskStore := postgresstorage.NewTaskStore(PGpool)
 
 	sendConn, err := broker.ConnectRabbitMQ(cfg.Rabbit)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer sendConn.Close()
+
 	sendClient, err := broker.NewRabbitClient(sendConn)
 	if err != nil {
 		log.Fatal(err)
 	}
 	taskSender := rabbitsender.New(sendClient)
 
-	consumeConn, err := broker.ConnectRabbitMQ(cfg.Rabbit)
-	if err != nil {
-		log.Fatal(err)
-	}
-	consumeClient, err := broker.NewRabbitClient(consumeConn)
-	if err != nil {
-		log.Fatal(err)
-	}
-	taskConsumer := rabbitconsumer.New(consumeClient)
+	// Настройка принятия результатов задач через брокер
+	// consumeConn, err := broker.ConnectRabbitMQ(cfg.Rabbit)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer consumeConn.Close()
+	// consumeClient, err := broker.NewRabbitClient(consumeConn)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// taskConsumer := rabbitconsumer.New(consumeClient)
 
-	taskService := task.NewTaskService(taskStore, taskSender, taskConsumer)
-	taskHandler := http.NewTaskHandler(taskService, sessionManager)
+	taskService := task.NewTaskService(taskStore, taskSender, nil)
+	taskHandler := http.NewTaskHandler(logger, taskService, sessionManager)
 
 	// go taskService.ListenTaskProcessor()
 
-	// Создаем хранилище, сервис, обработчик пользователей
 	userStore := postgresstorage.NewUserStore(PGpool)
 	userService := user.NewUserService(userStore)
-	userHandler := http.NewUserHandler(userService, sessionManager)
+	userHandler := http.NewUserHandler(logger, userService, sessionManager)
 
-	// Создаем http роутер
 	r := chi.NewRouter()
-	// Register middleware first
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
 	r.Use(middleware.RequestID)
+	r.Use(httpLogger.NewLoggingMiddleware(logger))
+	r.Use(middleware.Recoverer)
 	r.Use(middleware.RealIP)
-	
 
-	// Создаем отдельный Registry для метрик
 	registry := prometheus.NewRegistry()
-	
-	// Добавляем go runtime metrics и process collectors.
 	registry.MustRegister(
 		collectors.NewGoCollector(),
 		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
@@ -125,24 +126,17 @@ func main() {
 
 	r.Mount("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
 
-	// Добавляем swagger
 	r.Mount("/swagger", httpSwagger.WrapHandler)
 
-	// Прикрепляем обработчики
 	taskHandler.RegisterRoutes(r)
 	userHandler.RegisterRoutes(r)
 
-	// Создаем новый сервер с заданной конфигурацией и хранилищем
-	srv := httpServer.Server{
-		Config: cfg.HTTPServer,
-	}
+	srv := httpServer.NewServer(cfg.HTTPServer)
 
-	// Логируем сообщение о запуске сервера
-	log.Printf("starting server at %s\n", srv.Config.Addr)
-	// Запускаем сервер и проверяем на ошибки
-	if err := srv.Run(r); err != nil {
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	defer cancel()
+
+	if err := srv.Run(ctx, r); err != nil {
 		log.Fatal("server down unexpectedly")
 	}
-
-	// TODO: graceful shutdown, soon)
 }

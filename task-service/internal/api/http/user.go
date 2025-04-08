@@ -1,21 +1,27 @@
 package http
 
 import (
+	pkgLogger "code-tasks/pkg/log"
 	"code-tasks/task-service/internal/api/http/types"
+	"code-tasks/task-service/internal/domain"
 	"code-tasks/task-service/internal/usecases"
 	"code-tasks/task-service/utils"
+	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 type UserHandler struct {
+	logger *slog.Logger
+
 	service  usecases.User
 	smanager usecases.Session
 }
 
-func NewUserHandler(service usecases.User, smanager usecases.Session) *UserHandler {
-	return &UserHandler{service: service, smanager: smanager}
+func NewUserHandler(logger *slog.Logger, service usecases.User, smanager usecases.Session) *UserHandler {
+	return &UserHandler{logger: logger, service: service, smanager: smanager}
 }
 
 // @Summary Register a new user
@@ -28,15 +34,22 @@ func NewUserHandler(service usecases.User, smanager usecases.Session) *UserHandl
 // @Failure 400 {object} types.ErrorResponse "Invalid JSON or user already exists"
 // @Failure 500 {object} types.ErrorResponse "Internal error"
 // @Router /register [post]
-func (usrh *UserHandler) registerUserHandler(w http.ResponseWriter, r *http.Request) {
+func (uh *UserHandler) registerUserHandler(w http.ResponseWriter, r *http.Request) {
+	
+	
 	in, err := types.GetRegisterUserRequest(r)
 	if err != nil {
-		utils.WriteJSON(w, types.ErrorResponse{Error: "Invalid json"}, http.StatusBadRequest)
+		types.HandleError(w, domain.ErrBadRequest)
 		return
 	}
 
-	_, err = usrh.service.RegisterUser(in.Username, in.Password)
+	log := uh.logger.With(
+		slog.String("request_id", middleware.GetReqID(r.Context())),
+	)
+
+	_, err = uh.service.RegisterUser(in.Username, in.Password)
 	if err != nil {
+		log.Error("error while registering user: ", pkgLogger.Error(err))
 		types.HandleError(w, err)
 		return
 	}
@@ -55,23 +68,29 @@ func (usrh *UserHandler) registerUserHandler(w http.ResponseWriter, r *http.Requ
 // @Failure 401 {object} types.ErrorResponse "Incorrect login or password"
 // @Failure 500 {object} types.ErrorResponse "Internal error"
 // @Router /login [post]
-func (usrh *UserHandler) loginUserHandler(w http.ResponseWriter, r *http.Request) {
+func (uh *UserHandler) loginUserHandler(w http.ResponseWriter, r *http.Request) {
 	in, err := types.GetLoginUserRequest(r)
 	if err != nil {
-		utils.WriteJSON(w, types.ErrorResponse{Error: "Invalid json"}, http.StatusBadRequest)
+		types.HandleError(w, domain.ErrBadRequest)
 		return
 	}
 
-	id, err := usrh.service.LoginUser(in.Username, in.Password)
-	
+	log := uh.logger.With(
+		slog.String("request_id", middleware.GetReqID(r.Context())),
+	)
+
+	id, err := uh.service.LoginUser(in.Username, in.Password)
+
 	if err != nil {
+		log.Error("error while logging user in: ", pkgLogger.Error(err))
 		types.HandleError(w, err)
 		return
 	}
 
-	token, err := usrh.smanager.CreateSession(id)
-	
+	token, err := uh.smanager.CreateSession(id)
+
 	if err != nil {
+		log.Error("error while logging user in: ", pkgLogger.Error(err))
 		types.HandleError(w, err)
 		return
 	}

@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE if not exists users (
     id BIGSERIAL PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,
+    username VARCHAR(255) UNIQUE NOT NULL,
     hashed_password VARCHAR(255) NOT NULL,
 
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
@@ -16,8 +16,8 @@ CREATE TABLE if not exists tasks (
     code text NOT NULL,
     result text NOT NULL,
     task_status VARCHAR(16) NOT NULL,
-    stderr text NOT NULL,
-    stdout text NOT NULL,
+    stderr text,
+    stdout text,
 
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),

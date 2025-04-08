@@ -15,23 +15,21 @@ const (
 
 type sessionManager struct {
 	repo        repository.Session
-	maxlifetime int64
 
-	defaultSessionTimeout time.Duration
+	defaultSessionContextTimeout time.Duration
 }
 
-func NewSeessionManager(repo repository.Session, maxlifetime int64) usecases.Session {
-	defaultSessionTimeout := 5 * time.Second
+func NewSeessionManager(repo repository.Session) usecases.Session {
+	defaultSessionContextTimeout := 5 * time.Second
 	return &sessionManager{
 		repo:                  repo,
-		maxlifetime:           maxlifetime,
-		defaultSessionTimeout: defaultSessionTimeout,
+		defaultSessionContextTimeout: defaultSessionContextTimeout,
 	}
 }
 
 func (sm *sessionManager) CreateSession(userID int64) (string, error) {
 
-	ctx, cancel := context.WithTimeout(context.Background(), sm.defaultSessionTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), sm.defaultSessionContextTimeout)
 	defer cancel()
 	s, ok := sm.repo.GetSessionByUserId(ctx, userID)
 	if ok {
@@ -52,14 +50,14 @@ func (sm *sessionManager) CreateSession(userID int64) (string, error) {
 }
 
 func (sm *sessionManager) GetSessionByID(sid string) (domain.Session, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), sm.defaultSessionTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), sm.defaultSessionContextTimeout)
 	defer cancel()
 
 	return sm.repo.GetSession(ctx, sid)
 }
 
 func (sm *sessionManager) DeleteSession(sid string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), sm.defaultSessionTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), sm.defaultSessionContextTimeout)
 	defer cancel()
 	return sm.repo.DeleteSession(ctx, sid)
 }

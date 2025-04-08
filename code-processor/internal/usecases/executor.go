@@ -56,14 +56,12 @@ func loadImages(cli *client.Client) error {
 
 func pullImage(imageName string, cli *client.Client, ctx *context.Context) error {
 	res, err := cli.ImagePull(*ctx, imageName, image.PullOptions{})
-	// проверяем на ошибку
+
 	if err != nil {
 		return err
 	}
-	// в конце программы закрываем данные, которые получили. Не сам образ, а именно сообщение о его удачном получении
 	defer res.Close()
 
-	// из-за того, что полученные данные храняться в io.ReadCloser, их можно вывести в консоль таким образом
 	io.Copy(os.Stdout, res)
 	return nil
 }

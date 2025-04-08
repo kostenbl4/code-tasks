@@ -25,7 +25,7 @@ func (us *userStore) CreateUser(ctx context.Context, user domain.User) (int64, e
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return -1, domain.ErrUserNotFound
+			return -1, domain.ErrBadRequest
 		}
 		return -1, fmt.Errorf("failed to create user: %w", err)
 	}

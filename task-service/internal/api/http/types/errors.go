@@ -12,7 +12,6 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
-// пока что сделал так более унифицированную обработку ошибок
 func HandleError(w http.ResponseWriter, err error) {
 
 	if err == nil {

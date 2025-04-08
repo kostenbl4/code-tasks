@@ -24,3 +24,8 @@ redis:
   TTL: 30m
   write_timeout: 3s
   read_timeout: 2s
+
+logger:
+  format: text
+  level: info
+  directory: /app/logs

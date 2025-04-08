@@ -6,7 +6,7 @@ import (
 	"code-tasks/task-service/internal/repository"
 	"context"
 	"encoding/json"
-	"log"
+	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -21,10 +21,9 @@ func New(client broker.RabbitClient) repository.TaskSender {
 }
 
 func (rs rabbitmqSender) Send(ctx context.Context, task domain.Task) error {
-	log.Printf("sending message: taskID = %v", task.ID)
 	data, err := json.Marshal(task)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to send message with taskID = %v : %w", task.ID, err)
 	}
 	return rs.client.Send(ctx, "code_requests", "code.process", amqp.Publishing{
 		ContentType:   "application/json",

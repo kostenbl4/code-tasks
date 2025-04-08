@@ -1,24 +1,28 @@
 package http
 
 import (
+	pkgLogger "code-tasks/pkg/log"
 	"code-tasks/task-service/internal/api/http/types"
 	"code-tasks/task-service/internal/domain"
 	"code-tasks/task-service/internal/middleware/auth"
 	"code-tasks/task-service/internal/usecases"
 	"code-tasks/task-service/utils"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 type TaskHandler struct {
+	logger *slog.Logger
+
 	service  usecases.Task
 	smanager usecases.Session
 }
 
-func NewTaskHandler(service usecases.Task, smanager usecases.Session) *TaskHandler {
-	return &TaskHandler{service: service, smanager: smanager}
+func NewTaskHandler(logger *slog.Logger, service usecases.Task, smanager usecases.Session) *TaskHandler {
+	return &TaskHandler{logger: logger, service: service, smanager: smanager}
 }
 
 // @Summary Create a new task
@@ -38,27 +42,31 @@ func (th *TaskHandler) createTaskHandler(w http.ResponseWriter, r *http.Request)
 	var in types.CreateTaskRequest // читаем json в случае если передаются данные для обработки
 	err := utils.ReadJSON(r, &in)
 	if err != nil {
-		utils.WriteJSON(w, types.ErrorResponse{Error: "Bad request"}, http.StatusBadRequest)
+		types.HandleError(w, domain.ErrBadRequest)
 		return
 	}
 
 	userID, err := utils.GetContextInt(r, auth.UserIDKey)
-	
 	if err != nil {
-		log.Println(err)
-		utils.WriteJSON(w, types.ErrorResponse{Error: "Bad request"}, http.StatusBadRequest)
+		types.HandleError(w, domain.ErrBadRequest)
 		return
 	}
+
+	log := th.logger.With(
+		slog.String("request_id", middleware.GetReqID(r.Context())),
+		slog.Int("user_id", userID),
+	)
+
 	task, err := th.service.CreateTask(in.Translator, in.Code, int64(userID))
 	if err != nil {
-		log.Println(err)
+		log.Error("error while creating task: ", pkgLogger.Error(err))
 		types.HandleError(w, err)
 		return
 	}
 
 	err = th.service.SendTask(task)
 	if err != nil {
-		log.Println(err)
+		log.Error("error while sending task: ", pkgLogger.Error(err))
 		types.HandleError(w, err)
 		return
 	}
@@ -81,12 +89,17 @@ func (th *TaskHandler) createTaskHandler(w http.ResponseWriter, r *http.Request)
 func (th *TaskHandler) getTaskStatusHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.ParseUUID(r, "task_id")
 	if err != nil {
-		utils.WriteJSON(w, types.ErrorResponse{Error: "Invalid task_id"}, http.StatusBadRequest)
+		types.HandleError(w, domain.ErrBadRequest)
 		return
 	}
 
+	log := th.logger.With(
+		slog.String("request_id", middleware.GetReqID(r.Context())),
+	)
+
 	task, err := th.service.GetTask(id)
 	if err != nil {
+		log.Error("error while getting task status: ", pkgLogger.Error(err))
 		types.HandleError(w, err)
 		return
 	}
@@ -109,12 +122,17 @@ func (th *TaskHandler) getTaskStatusHandler(w http.ResponseWriter, r *http.Reque
 func (th *TaskHandler) getTaskResultHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.ParseUUID(r, "task_id")
 	if err != nil {
-		utils.WriteJSON(w, types.ErrorResponse{Error: "Invalid task_id"}, http.StatusBadRequest)
+		types.HandleError(w, domain.ErrBadRequest)
 		return
 	}
 
+	log := th.logger.With(
+		slog.String("request_id", middleware.GetReqID(r.Context())),
+	)
+
 	task, err := th.service.GetTask(id)
 	if err != nil {
+		log.Error("error while getting task result: ", pkgLogger.Error(err))
 		types.HandleError(w, err)
 		return
 	}
@@ -136,9 +154,13 @@ func (th *TaskHandler) commitTaskResult(w http.ResponseWriter, r *http.Request) 
 	var in types.CommitTaskRequest
 	err := utils.ReadJSON(r, &in)
 	if err != nil {
-		utils.WriteJSON(w, types.ErrorResponse{Error: "Bad request"}, http.StatusBadRequest)
+		types.HandleError(w, domain.ErrBadRequest)
 		return
 	}
+
+	log := th.logger.With(
+		slog.String("request_id", middleware.GetReqID(r.Context())),
+	)
 
 	task := domain.Task{
 		ID:         in.ID,
@@ -151,6 +173,7 @@ func (th *TaskHandler) commitTaskResult(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if err := th.service.UpdateTask(task); err != nil {
+		log.Error("error while commiting task: ", pkgLogger.Error(err))
 		types.HandleError(w, err)
 		return
 	}

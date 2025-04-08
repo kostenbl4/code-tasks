@@ -6,7 +6,6 @@ import (
 	"code-tasks/task-service/internal/usecases"
 	"code-tasks/task-service/utils"
 	"context"
-	"log"
 	"time"
 )
 
@@ -30,19 +29,15 @@ func NewUserService(repo repository.User) usecases.User {
 // Создает нового пользователя и добавляет его в хранилище
 func (us *userService) RegisterUser(username, password string) (int64, error) {
 
-	log.Printf("Registering user %s", username)
-
 	ctx, cancel := context.WithTimeout(context.Background(), us.defaultUserTimeout)
 	defer cancel()
 
-	log.Println("Getting user by username")
 	_, err := us.repo.GetByUsername(ctx, username)
 
 	if err != domain.ErrUserNotFound {
 		return -1, domain.ErrUserAlreadyExists
 	}
 
-	log.Println("Hashing password")
 	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
 		return -1, err
@@ -53,14 +48,10 @@ func (us *userService) RegisterUser(username, password string) (int64, error) {
 		Hpass:    hashedPassword,
 	}
 
-	log.Println("Creating user")
 	id, err := us.repo.CreateUser(ctx, user)
 	if err != nil {
-		log.Println(err)
 		return -1, err
 	}
-
-	log.Printf("User created with id %d", id)
 
 	return id, nil
 }

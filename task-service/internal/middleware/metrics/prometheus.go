@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -60,12 +61,13 @@ func (m *Middleware) Handler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
-			rw := NewResponseWriter(w)
+			rw := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+			//rw := NewResponseWriter(w)
 
 			defer func() {
 				duration := time.Since(start).Seconds()
 
-				statusCode := rw.Status()
+				statusCode := string(rw.Status())
 
 				m.requestsTotal.WithLabelValues(
 					r.Method,
@@ -85,39 +87,10 @@ func (m *Middleware) Handler() func(http.Handler) http.Handler {
 				m.responseSize.WithLabelValues(
 					r.Method,
 					statusCode,
-				).Observe(float64(rw.Size()))
+				).Observe(float64(rw.BytesWritten()))
 			}()
 
 			next.ServeHTTP(rw, r)
 		})
 	}
-}
-
-type ResponseWriter struct {
-	http.ResponseWriter
-	status int
-	size   int
-}
-
-func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
-	return &ResponseWriter{w, http.StatusOK, 0}
-}
-
-func (rw *ResponseWriter) WriteHeader(status int) {
-	rw.status = status
-	rw.ResponseWriter.WriteHeader(status)
-}
-
-func (rw *ResponseWriter) Write(b []byte) (int, error) {
-	size, err := rw.ResponseWriter.Write(b)
-	rw.size += size
-	return size, err
-}
-
-func (rw *ResponseWriter) Status() string {
-	return http.StatusText(rw.status)
-}
-
-func (rw *ResponseWriter) Size() int {
-	return rw.size
 }
