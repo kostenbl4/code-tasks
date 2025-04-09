@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5/middleware"
@@ -9,7 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-//TODO добавить handler label для отслеживания обработчиков
+//TODO добавить handler label, translator label для отслеживания обработчиков, трансляторов
 
 type Middleware struct {
 	requestsTotal   *prometheus.CounterVec
@@ -67,7 +68,7 @@ func (m *Middleware) Handler() func(http.Handler) http.Handler {
 			defer func() {
 				duration := time.Since(start).Seconds()
 
-				statusCode := string(rw.Status())
+				statusCode := strconv.Itoa(rw.Status())
 
 				m.requestsTotal.WithLabelValues(
 					r.Method,
