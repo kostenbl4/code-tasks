@@ -1,11 +1,12 @@
 package inmemstorage
 
 import (
-	"code-tasks/task-service/internal/domain"
-	"code-tasks/task-service/internal/repository"
 	"context"
 	"sync"
 	"sync/atomic"
+
+	"github.com/kostenbl4/code-tasks/task-service/internal/domain"
+	"github.com/kostenbl4/code-tasks/task-service/internal/repository"
 )
 
 // userStore - хранилище пользователей в оперативной памяти

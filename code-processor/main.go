@@ -1,24 +1,26 @@
 package main
 
 import (
-	"code-tasks/code-processor/internal/api/rabbit"
-	"code-tasks/code-processor/internal/config"
-	"code-tasks/code-processor/internal/usecases"
-	httpsender "code-tasks/code-processor/internal/usecases/http_sender"
-	"code-tasks/code-processor/internal/usecases/processor"
-	pkgLogger "code-tasks/pkg/log"
 	"context"
 	"log/slog"
-	"os"
+	"os"	
 	"os/signal"
 	"syscall"
 
-	//pkgconfig "code-tasks/pkg/config"
+	"github.com/kostenbl4/code-tasks/code-processor/internal/api/rabbit"
+	"github.com/kostenbl4/code-tasks/code-processor/internal/config"
+	"github.com/kostenbl4/code-tasks/code-processor/internal/usecases"
+	httpsender "github.com/kostenbl4/code-tasks/code-processor/internal/usecases/http_sender"
+	"github.com/kostenbl4/code-tasks/code-processor/internal/usecases/processor"
+	pkgLogger "github.com/kostenbl4/code-tasks/pkg/log"
+
+	//pkgconfig "github.com/kostenbl4/code-tasks/pkg/config"
 	"net/http"
 
 	//rabbitSender "code-processor/internal/usecases/rabbit_sender"
-	"code-tasks/pkg/broker"
 	"log"
+
+	"github.com/kostenbl4/code-tasks/pkg/broker"
 
 	"github.com/docker/docker/client"
 	"github.com/ilyakaznacheev/cleanenv"
@@ -27,7 +29,6 @@ import (
 func main() {
 
 	var cfg config.Config
-	
 
 	if err := cleanenv.ReadConfig("config.yaml", &cfg); err != nil {
 		log.Fatal(err)
@@ -35,7 +36,7 @@ func main() {
 
 	logger, file := pkgLogger.NewLogger(cfg.Logger)
 	slog.SetDefault(logger)
-	
+
 	defer file.Close()
 
 	consumeConn, err := broker.ConnectRabbitMQ(cfg.Rabbit)

@@ -1,6 +1,6 @@
 package types
 
-import "code-tasks/task-service/internal/domain"
+import "github.com/kostenbl4/code-tasks/task-service/internal/domain"
 
 // CreateTaskRequest - структура для входных данных на создание задачи
 type CreateTaskRequest struct {
@@ -33,7 +33,7 @@ type TaskResponseError struct {
 	Stderr string `json:"stderr"`
 }
 
-type CommitTaskRequest struct{
+type CommitTaskRequest struct {
 	domain.Task
 }
 

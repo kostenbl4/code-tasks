@@ -1,11 +1,12 @@
 package rediscache
 
 import (
-	"code-tasks/pkg/cache"
 	"context"
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/kostenbl4/code-tasks/pkg/cache"
 
 	"github.com/redis/go-redis/v9"
 )

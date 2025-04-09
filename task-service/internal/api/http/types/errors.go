@@ -1,10 +1,11 @@
 package types
 
 import (
-	"code-tasks/task-service/internal/domain"
-	"code-tasks/task-service/utils"
 	"errors"
 	"net/http"
+
+	"github.com/kostenbl4/code-tasks/task-service/internal/domain"
+	"github.com/kostenbl4/code-tasks/task-service/utils"
 )
 
 // ErrorResponse - структура для выходных данных в случае ошибки

@@ -1,11 +1,12 @@
 package postgresstorage
 
 import (
-	"code-tasks/task-service/internal/domain"
-	"code-tasks/task-service/internal/repository"
 	"context"
 	"errors"
 	"fmt"
+
+	"github.com/kostenbl4/code-tasks/task-service/internal/domain"
+	"github.com/kostenbl4/code-tasks/task-service/internal/repository"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"

@@ -2,11 +2,12 @@ package httpsender
 
 import (
 	"bytes"
-	"code-tasks/code-processor/internal/domain"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/kostenbl4/code-tasks/code-processor/internal/domain"
 )
 
 // HttpSender - вариант отправки результата в http

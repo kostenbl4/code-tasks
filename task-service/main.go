@@ -1,33 +1,35 @@
 package main
 
 import (
-	"code-tasks/pkg/broker"
-	httpLogger "code-tasks/pkg/http/middleware"
-	httpServer "code-tasks/pkg/http/server"
-	pkgLogger "code-tasks/pkg/log"
-	"code-tasks/pkg/postgres"
-	"code-tasks/task-service/internal/api/http"
-	"code-tasks/task-service/internal/config"
-	"code-tasks/task-service/internal/middleware/metrics"
 	"context"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
-	//inmemstorage "code-tasks/task-service/internal/repository/in-mem-storage"
-	rediscache "code-tasks/pkg/cache/redis"
-	postgresstorage "code-tasks/task-service/internal/repository/postgres_storage"
+	"github.com/kostenbl4/code-tasks/pkg/broker"
+	httpLogger "github.com/kostenbl4/code-tasks/pkg/http/middleware"
+	httpServer "github.com/kostenbl4/code-tasks/pkg/http/server"
+	pkgLogger "github.com/kostenbl4/code-tasks/pkg/log"
+	"github.com/kostenbl4/code-tasks/pkg/postgres"
+	"github.com/kostenbl4/code-tasks/task-service/internal/api/http"
+	"github.com/kostenbl4/code-tasks/task-service/internal/config"
+	"github.com/kostenbl4/code-tasks/task-service/internal/middleware/metrics"
 
-	//rabbitconsumer "code-tasks/task-service/internal/repository/rabbit_consumer"
-	rabbitsender "code-tasks/task-service/internal/repository/rabbit_sender"
-	redisstorage "code-tasks/task-service/internal/repository/redis_storage"
-	"code-tasks/task-service/internal/usecases/session"
-	"code-tasks/task-service/internal/usecases/task"
-	"code-tasks/task-service/internal/usecases/user"
+	//inmemstorage "github.com/kostenbl4/code-tasks/task-service/internal/repository/in-mem-storage"
+	rediscache "github.com/kostenbl4/code-tasks/pkg/cache/redis"
+	postgresstorage "github.com/kostenbl4/code-tasks/task-service/internal/repository/postgres_storage"
+
+	//rabbitconsumer "github.com/kostenbl4/code-tasks/task-service/internal/repository/rabbit_consumer"
 	"log"
 
-	_ "code-tasks/task-service/docs"
+	rabbitsender "github.com/kostenbl4/code-tasks/task-service/internal/repository/rabbit_sender"
+	redisstorage "github.com/kostenbl4/code-tasks/task-service/internal/repository/redis_storage"
+	"github.com/kostenbl4/code-tasks/task-service/internal/usecases/session"
+	"github.com/kostenbl4/code-tasks/task-service/internal/usecases/task"
+	"github.com/kostenbl4/code-tasks/task-service/internal/usecases/user"
+
+	_ "github.com/kostenbl4/code-tasks/task-service/docs"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -143,5 +145,4 @@ func main() {
 		log.Fatal("server down unexpectedly")
 	}
 
-	
 }

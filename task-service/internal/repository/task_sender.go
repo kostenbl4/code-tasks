@@ -2,7 +2,8 @@ package repository
 
 import (
 	"context"
-	"code-tasks/task-service/internal/domain"
+
+	"github.com/kostenbl4/code-tasks/task-service/internal/domain"
 )
 
 type TaskSender interface {

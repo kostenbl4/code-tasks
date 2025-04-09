@@ -1,10 +1,11 @@
 package inmemstorage
 
 import (
-	"code-tasks/task-service/internal/domain"
-	"code-tasks/task-service/internal/repository"
 	"context"
 	"sync"
+
+	"github.com/kostenbl4/code-tasks/task-service/internal/domain"
+	"github.com/kostenbl4/code-tasks/task-service/internal/repository"
 )
 
 type sessionStore struct {

@@ -1,11 +1,11 @@
 package config
 
 import (
-	"code-tasks/pkg/broker"
-	rediscache "code-tasks/pkg/cache/redis"
-	"code-tasks/pkg/http/server"
-	pkgLogger "code-tasks/pkg/log"
-	"code-tasks/pkg/postgres"
+	"github.com/kostenbl4/code-tasks/pkg/broker"
+	rediscache "github.com/kostenbl4/code-tasks/pkg/cache/redis"
+	"github.com/kostenbl4/code-tasks/pkg/http/server"
+	pkgLogger "github.com/kostenbl4/code-tasks/pkg/log"
+	"github.com/kostenbl4/code-tasks/pkg/postgres"
 )
 
 type Config struct {

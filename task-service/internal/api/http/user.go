@@ -1,13 +1,14 @@
 package http
 
 import (
-	pkgLogger "code-tasks/pkg/log"
-	"code-tasks/task-service/internal/api/http/types"
-	"code-tasks/task-service/internal/domain"
-	"code-tasks/task-service/internal/usecases"
-	"code-tasks/task-service/utils"
 	"log/slog"
 	"net/http"
+
+	pkgLogger "github.com/kostenbl4/code-tasks/pkg/log"
+	"github.com/kostenbl4/code-tasks/task-service/internal/api/http/types"
+	"github.com/kostenbl4/code-tasks/task-service/internal/domain"
+	"github.com/kostenbl4/code-tasks/task-service/internal/usecases"
+	"github.com/kostenbl4/code-tasks/task-service/utils"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -35,8 +36,7 @@ func NewUserHandler(logger *slog.Logger, service usecases.User, smanager usecase
 // @Failure 500 {object} types.ErrorResponse "Internal error"
 // @Router /register [post]
 func (uh *UserHandler) registerUserHandler(w http.ResponseWriter, r *http.Request) {
-	
-	
+
 	in, err := types.GetRegisterUserRequest(r)
 	if err != nil {
 		types.HandleError(w, domain.ErrBadRequest)

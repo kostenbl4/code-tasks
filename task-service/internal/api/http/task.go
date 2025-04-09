@@ -1,14 +1,15 @@
 package http
 
 import (
-	pkgLogger "code-tasks/pkg/log"
-	"code-tasks/task-service/internal/api/http/types"
-	"code-tasks/task-service/internal/domain"
-	"code-tasks/task-service/internal/middleware/auth"
-	"code-tasks/task-service/internal/usecases"
-	"code-tasks/task-service/utils"
 	"log/slog"
 	"net/http"
+
+	pkgLogger "github.com/kostenbl4/code-tasks/pkg/log"
+	"github.com/kostenbl4/code-tasks/task-service/internal/api/http/types"
+	"github.com/kostenbl4/code-tasks/task-service/internal/domain"
+	"github.com/kostenbl4/code-tasks/task-service/internal/middleware/auth"
+	"github.com/kostenbl4/code-tasks/task-service/internal/usecases"
+	"github.com/kostenbl4/code-tasks/task-service/utils"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

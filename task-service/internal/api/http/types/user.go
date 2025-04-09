@@ -1,8 +1,9 @@
 package types
 
 import (
-	"code-tasks/task-service/utils"
 	"net/http"
+
+	"github.com/kostenbl4/code-tasks/task-service/utils"
 )
 
 type RegisterUserRequest struct {

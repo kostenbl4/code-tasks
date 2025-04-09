@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"log"
 
-	"code-tasks/pkg/broker"
-	"code-tasks/task-service/internal/domain"
-	"code-tasks/task-service/internal/repository"
+	"github.com/kostenbl4/code-tasks/pkg/broker"
+	"github.com/kostenbl4/code-tasks/task-service/internal/domain"
+	"github.com/kostenbl4/code-tasks/task-service/internal/repository"
 )
 
 var queueName = "code.results"

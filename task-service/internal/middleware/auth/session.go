@@ -1,12 +1,13 @@
 package auth
 
 import (
-	"code-tasks/task-service/internal/api/http/types"
-	"code-tasks/task-service/internal/usecases"
-	"code-tasks/task-service/utils"
 	"context"
 	"net/http"
 	"strings"
+
+	"github.com/kostenbl4/code-tasks/task-service/internal/api/http/types"
+	"github.com/kostenbl4/code-tasks/task-service/internal/usecases"
+	"github.com/kostenbl4/code-tasks/task-service/utils"
 )
 
 var UserIDKey utils.ContextKey = "user_id"
@@ -34,7 +35,7 @@ func SessionMiddleware(smanager usecases.Session) func(http.Handler) http.Handle
 				utils.WriteJSON(w, types.ErrorResponse{Error: "Invalid token"}, http.StatusUnauthorized)
 				return
 			}
-			
+
 			// Добавляем в контекст идентификатор пользователя
 			ctx := context.WithValue(r.Context(), UserIDKey, int(s.UserID))
 			r = r.WithContext(ctx)

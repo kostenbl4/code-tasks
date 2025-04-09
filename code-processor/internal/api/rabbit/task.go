@@ -1,14 +1,15 @@
 package rabbit
 
 import (
-	"code-tasks/code-processor/internal/domain"
-	"code-tasks/code-processor/internal/usecases"
-	"code-tasks/pkg/broker"
 	"context"
 	"fmt"
 	"log/slog"
 
-	pkgLogger "code-tasks/pkg/log"
+	"github.com/kostenbl4/code-tasks/code-processor/internal/domain"
+	"github.com/kostenbl4/code-tasks/code-processor/internal/usecases"
+	"github.com/kostenbl4/code-tasks/pkg/broker"
+
+	pkgLogger "github.com/kostenbl4/code-tasks/pkg/log"
 
 	"encoding/json"
 )

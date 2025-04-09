@@ -1,8 +1,8 @@
 package config
 
 import (
-	"code-tasks/pkg/broker"
-	pkgLogger "code-tasks/pkg/log"
+	"github.com/kostenbl4/code-tasks/pkg/broker"
+	pkgLogger "github.com/kostenbl4/code-tasks/pkg/log"
 )
 
 type Config struct {

@@ -1,10 +1,11 @@
 package processor
 
 import (
-	"code-tasks/code-processor/internal/domain"
-	"code-tasks/code-processor/internal/usecases"
 	"context"
 	"time"
+
+	"github.com/kostenbl4/code-tasks/code-processor/internal/domain"
+	"github.com/kostenbl4/code-tasks/code-processor/internal/usecases"
 )
 
 type processor struct {

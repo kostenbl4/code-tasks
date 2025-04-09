@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"code-tasks/task-service/internal/domain"
 	"context"
+
+	"github.com/kostenbl4/code-tasks/task-service/internal/domain"
 )
 
 type Session interface {

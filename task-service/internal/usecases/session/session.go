@@ -1,12 +1,13 @@
 package session
 
 import (
-	"code-tasks/task-service/internal/domain"
-	"code-tasks/task-service/internal/repository"
-	"code-tasks/task-service/internal/usecases"
-	"code-tasks/task-service/utils"
 	"context"
 	"time"
+
+	"github.com/kostenbl4/code-tasks/task-service/internal/domain"
+	"github.com/kostenbl4/code-tasks/task-service/internal/repository"
+	"github.com/kostenbl4/code-tasks/task-service/internal/usecases"
+	"github.com/kostenbl4/code-tasks/task-service/utils"
 )
 
 const (
@@ -14,7 +15,7 @@ const (
 )
 
 type sessionManager struct {
-	repo        repository.Session
+	repo repository.Session
 
 	defaultSessionContextTimeout time.Duration
 }
@@ -22,7 +23,7 @@ type sessionManager struct {
 func NewSeessionManager(repo repository.Session) usecases.Session {
 	defaultSessionContextTimeout := 5 * time.Second
 	return &sessionManager{
-		repo:                  repo,
+		repo:                         repo,
 		defaultSessionContextTimeout: defaultSessionContextTimeout,
 	}
 }

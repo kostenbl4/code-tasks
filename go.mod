@@ -1,4 +1,4 @@
-module code-tasks
+module github.com/kostenbl4/code-tasks
 
 go 1.24.0
 

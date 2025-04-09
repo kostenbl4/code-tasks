@@ -1,11 +1,12 @@
 package redisstorage
 
 import (
-	"code-tasks/pkg/cache"
-	"code-tasks/task-service/internal/domain"
-	"code-tasks/task-service/internal/repository"
 	"context"
 	"time"
+
+	"github.com/kostenbl4/code-tasks/pkg/cache"
+	"github.com/kostenbl4/code-tasks/task-service/internal/domain"
+	"github.com/kostenbl4/code-tasks/task-service/internal/repository"
 )
 
 type sessionStore struct {

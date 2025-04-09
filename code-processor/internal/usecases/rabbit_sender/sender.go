@@ -1,10 +1,11 @@
 package rabbitsender
 
 import (
-	"code-tasks/code-processor/internal/domain"
-	"code-tasks/pkg/broker"
 	"context"
 	"encoding/json"
+
+	"github.com/kostenbl4/code-tasks/code-processor/internal/domain"
+	"github.com/kostenbl4/code-tasks/pkg/broker"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
