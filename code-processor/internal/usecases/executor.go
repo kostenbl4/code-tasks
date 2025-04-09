@@ -5,8 +5,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
-	"os"
 
 	"log"
 
@@ -50,7 +48,6 @@ func loadImages(cli *client.Client) error {
 	if err := pullImage("python:alpine", cli, &ctx); err != nil {
 		return err
 	}
-	log.Println("all images loaded")
 	return nil
 }
 
@@ -62,7 +59,7 @@ func pullImage(imageName string, cli *client.Client, ctx *context.Context) error
 	}
 	defer res.Close()
 
-	io.Copy(os.Stdout, res)
+	// io.Copy(os.Stdout, res)
 	return nil
 }
 

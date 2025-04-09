@@ -3,3 +3,8 @@ rabbitmq:
   password: mypassword
   host: rabbitmq:5672
   vhost: /
+
+logger:
+  format: text
+  level: info
+  directory: /app/logs

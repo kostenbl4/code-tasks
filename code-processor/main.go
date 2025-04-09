@@ -6,6 +6,13 @@ import (
 	"code-tasks/code-processor/internal/usecases"
 	httpsender "code-tasks/code-processor/internal/usecases/http_sender"
 	"code-tasks/code-processor/internal/usecases/processor"
+	pkgLogger "code-tasks/pkg/log"
+	"context"
+	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
+
 	//pkgconfig "code-tasks/pkg/config"
 	"net/http"
 
@@ -25,6 +32,11 @@ func main() {
 	if err := cleanenv.ReadConfig("config.yaml", &cfg); err != nil {
 		log.Fatal(err)
 	}
+
+	logger, file := pkgLogger.NewLogger(cfg.Logger)
+	slog.SetDefault(logger)
+	
+	defer file.Close()
 
 	consumeConn, err := broker.ConnectRabbitMQ(cfg.Rabbit)
 	if err != nil {
@@ -54,23 +66,24 @@ func main() {
 	httpClient := http.Client{}
 	resultSender := httpsender.NewHttpSender(httpClient)
 
-	cli, err := client.NewClientWithOpts(
+	dockerClient, err := client.NewClientWithOpts(
 		client.FromEnv,
 		client.WithVersion("1.45"),
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer cli.Close()
+	defer dockerClient.Close()
 
-	codeExecutor := usecases.NewCodeExecutor(cli)
+	codeExecutor := usecases.NewCodeExecutor(dockerClient)
 
 	taskProcessor := processor.NewProcessor(resultSender, codeExecutor)
-	rabbitHandler := rabbit.NewRabbitHandler(consumeClient, taskProcessor)
+	rabbitHandler := rabbit.NewRabbitHandler(logger, consumeClient, taskProcessor)
 
-	if err := rabbitHandler.ConsumeTasks(); err != nil {
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	defer cancel()
+
+	if err := rabbitHandler.ConsumeTasks(ctx); err != nil {
 		log.Fatal(err)
 	}
-
-	// TODO: graceful shutdown, soon)
 }

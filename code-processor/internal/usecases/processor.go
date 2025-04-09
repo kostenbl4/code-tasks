@@ -6,5 +6,6 @@ import (
 
 type Processor interface {
 	Process(task domain.Task) error
+	Stop() error
 }
 

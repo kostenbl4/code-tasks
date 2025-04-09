@@ -10,6 +10,7 @@ import (
 	"code-tasks/task-service/internal/config"
 	"code-tasks/task-service/internal/middleware/metrics"
 	"context"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -57,6 +58,8 @@ func main() {
 	}
 
 	logger, file := pkgLogger.NewLogger(cfg.Logger)
+	slog.SetDefault(logger)
+
 	defer file.Close()
 
 	// Создаем хранилище в операционной памяти
@@ -139,4 +142,6 @@ func main() {
 	if err := srv.Run(ctx, r); err != nil {
 		log.Fatal("server down unexpectedly")
 	}
+
+	
 }

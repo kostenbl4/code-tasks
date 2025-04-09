@@ -50,3 +50,8 @@ func (p processor) Process(task domain.Task) error {
 
 	return nil
 }
+
+func (p processor) Stop() error {
+	p.executeTimeout = 30 * time.Second
+	return nil
+}
